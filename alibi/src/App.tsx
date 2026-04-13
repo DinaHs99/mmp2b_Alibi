@@ -1,15 +1,29 @@
-import { supabase } from './lib/supabase.ts'
-import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home.tsx'
+import Room from './pages/Room.tsx'
+import HowToPlay from './pages/HowToPlay.tsx'
+import CreateName from './pages/create/CreateName.tsx'
+import CreatePlayers from './pages/create/CreatePlayers.tsx'
+import CreateScenario from './pages/create/CreateScenario.tsx'
+
+import JoinCode from './pages/join/JoinCode.tsx'
+import JoinName from './pages/join/JoinName.tsx'
 
 function App() {
-  useEffect(() => {
-    console.log('Supabase client:', supabase)
-  }, [])
-
   return (
-    <div>
-      <h1 className="text-4xl text-red-500">Alibi</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/"             element={<Home />} />
+        <Route path="/how-to-play"  element={<HowToPlay />} />
+        <Route path="/room/:code"   element={<Room />} />
+        <Route path="/create/name"     element={<CreateName />} />
+        <Route path="/create/players"  element={<CreatePlayers />} />
+        <Route path="/create/scenario" element={<CreateScenario />} />
+        
+        <Route path="/join/name"  element={<JoinName />} />
+        <Route path="/join/code"  element={<JoinCode />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

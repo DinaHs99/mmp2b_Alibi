@@ -24,6 +24,7 @@ export default {
         'logo': '130px',  
         'quote':   '32px',
         'subhead': '24px',
+        'heading': '20px',
         'body':    '16px',
         'chat':    '14px',
 

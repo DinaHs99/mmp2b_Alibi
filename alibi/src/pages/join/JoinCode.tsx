@@ -1,34 +1,30 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useGame } from '../../context/GameContext'
+import { useJoinRoom } from '../../hooks/useJoinRoom'
 import PageLayout from '../../components/ui/PageLayout'
 import logo from '../../assets/logo1.png'
 
 export default function JoinCode() {
-  const navigate = useNavigate()
-  const { setRoomCode } = useGame()
   const [input, setInput] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [localError, setLocalError] = useState('')
+
+
+  const { joinRoom, loading, error } = useJoinRoom()
 
   const handleJoin = async () => {
+    console.log('handleJoin called with:', input)
+
     if (!input.trim()) {
-      setError('Please enter a room code')
+      setLocalError('Please enter a room code')
       return
     }
     if (input.trim().length !== 6) {
-      setError('Room code must be 6 characters')
+      setLocalError('Room code must be 6 characters')
       return
     }
 
-    setLoading(true)
-
-    // TODO: check if room exists in Supabase
-    // For now navigate directly
-    setRoomCode(input.toUpperCase())
-    navigate(`/room/${input.toUpperCase()}`)
-
-    setLoading(false)
+    setLocalError('')
+    console.log('Calling joinRoom...')
+    await joinRoom(input.trim())
   }
 
   return (
@@ -52,7 +48,7 @@ export default function JoinCode() {
           value={input}
           onChange={e => {
             setInput(e.target.value.toUpperCase())
-            setError('')
+            setLocalError('')
           }}
           onKeyDown={e => e.key === 'Enter' && handleJoin()}
           placeholder="ABC123"
@@ -60,7 +56,10 @@ export default function JoinCode() {
           className="font-mono bg-transparent border-b-2 border-alibi-gold text-alibi-gold text-center text-3xl outline-none w-72 pb-2 mb-2 placeholder:text-alibi-cream/30 tracking-widest"
         />
 
-        {/* Error */}
+        {/* Errors */}
+        {localError && (
+          <p className="font-body text-alibi-red text-xs mb-4">{localError}</p>
+        )}
         {error && (
           <p className="font-body text-alibi-red text-xs mb-4">{error}</p>
         )}

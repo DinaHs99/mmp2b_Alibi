@@ -7,37 +7,32 @@ interface GameContextType {
     setPlayerCount: (count: number) => void;
     roomCode: string;
     setRoomCode: (code: string) => void;
+    scenarioId: string;
+    setScenarioId: (id: string) => void;
     isHost: boolean;
     setIsHost: (isHost: boolean) => void;
-    isReady: boolean;
-    setIsReady: (isReady: boolean) => void;
-    isStarted: boolean;
-    setIsStarted: (isStarted: boolean) => void;
 }
 
 const GameContext = createContext<GameContextType>({
     playerName: "",
-    setPlayerName: () => {},
-    playerCount: 0,
-    setPlayerCount: () => {},
+    setPlayerName: () => { },
+    playerCount: 5,
+    setPlayerCount: () => { },
     roomCode: "",
-    setRoomCode: () => {},
-
+    setRoomCode: () => { },
+    scenarioId: "",
+    setScenarioId: () => { },
     isHost: false,
-    setIsHost: () => {},
-    isReady: false,
-    setIsReady: () => {},
-    isStarted: false,
-    setIsStarted: () => {},
+    setIsHost: () => { },
 });
 
 export const GameProvider = ({ children }: { children: ReactNode }) => {
     const [playerName, setPlayerName] = useState("");
     const [playerCount, setPlayerCount] = useState(5);
     const [roomCode, setRoomCode] = useState("");
+    const [scenarioId, setScenarioId] = useState("");
     const [isHost, setIsHost] = useState(false);
-    const [isReady, setIsReady] = useState(false);
-    const [isStarted, setIsStarted] = useState(false);
+   
 
     return (
         <GameContext.Provider value={{
@@ -45,8 +40,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             playerCount, setPlayerCount,
             roomCode, setRoomCode,
             isHost, setIsHost,
-            isReady, setIsReady,
-            isStarted, setIsStarted
+            scenarioId, setScenarioId
         }}>
             {children}
         </GameContext.Provider>

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import bg from '../assets/bg2.png';
 import paper from '../assets/paper1.png';
+import ConspiratorsImage from '../assets/conspirator.png';
+import CitizenImage from '../assets/citizen.png';
 
 type TabType = 'Objective' | 'Teams' | 'The Cycle';
 
@@ -104,68 +106,110 @@ const HowToPlay = () => {
 
                 <div className="border-t border-stone-400/50 mb-4" />
 
-                <h3 className="font-heading text-xs uppercase tracking-widest text-center mb-3">
+                <h3 className="font-heading text-heading font-medium uppercase tracking-widest text-center mb-3">
                   Win Conditions
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded">
-                    <h4 className="font-heading text-[9px] uppercase mb-1 border-b border-stone-400 pb-1">
+                  <div className="border border-stone-800/20 p-3 mb-3 bg-stone-900/5 rounded">
+                    <h4 className="font-body text-heading uppercase mb-1 border-b border-stone-400 pb-1">
                       Citizens
                     </h4>
                     <p className="font-body text-[9px] leading-tight italic">
-                      Identify and vote out all Conspirators before time runs out.
+                      Identify and vote out all Conspirators before they eliminate enough of your team to take control.
                     </p>
                   </div>
-                  <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded">
-                    <h4 className="font-heading text-[9px] uppercase mb-1 border-b border-stone-400 pb-1">
+                  <div className="border border-stone-800/20 p-3 mb-3 bg-stone-900/5 rounded">
+                    <h4 className="font-body text-heading uppercase mb-1 border-b border-stone-400 pb-1">
                       Conspirators
                     </h4>
                     <p className="font-body text-[9px] leading-tight italic">
-                      Eliminate citizens until you outnumber them.
+                      Eliminate citizens each night until your team equals or outnumbers the citizens still in the game.
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Teams Tab */}
-            {activeTab === 'Teams' && (
-              <div className="text-stone-800 space-y-3">
-                {[
-                  { name: 'Detektiv', team: 'Team Gut', desc: 'Stellt Fragen und analysiert. Ziel: alle Verschwörer eliminieren.' },
-                  { name: 'Verschwörer', team: 'Team Böse', desc: 'Lügt koordiniert. Ziel: überleben ohne entlarvt zu werden.' },
-                  { name: 'Zeuge', team: 'Neutral', desc: 'Weiß wer schuldig ist aber darf es nicht direkt sagen.' },
-                  { name: 'Doktor', team: 'Team Gut', desc: 'Hat einen Schutz pro Spiel. Rettet einen Spieler pro Nacht.' },
-                  { name: 'Ermittler', team: 'Team Gut', desc: 'Kann einmal die echte Rolle eines Spielers aufdecken.' },
-                ].map((role) => (
-                  <div key={role.name} className="border border-stone-800/20 p-3 bg-stone-900/5 rounded">
-                    <div className="flex justify-between items-center mb-1">
-                      <h4 className="font-heading text-[10px] uppercase">{role.name}</h4>
-                      <span className="font-mono text-[8px] opacity-60">{role.team}</span>
-                    </div>
-                    <p className="font-body text-[9px] leading-tight italic">{role.desc}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Teams Tab */}
+        {activeTab === 'Teams' && (
+          <div className="text-stone-800 space-y-4">
 
-            {/* The Cycle Tab */}
-            {activeTab === 'The Cycle' && (
-              <div className="text-stone-800 space-y-3">
-                {[
-                  { phase: '01 — Tag', desc: 'Alle diskutieren öffentlich. Verhör, Beweise, Nervositäts-Anzeige.' },
-                  { phase: '02 — Voting', desc: 'Alle voten wen sie eliminieren. Mehrheit entscheidet.' },
-                  { phase: '03 — Nacht', desc: 'Verschwörer wählen Opfer. Doktor schützt. Zeuge bekommt Hinweis.' },
-                  { phase: '04 — Morgen', desc: 'Enthüllung. Wer wurde eliminiert? Echte Rolle wird aufgedeckt.' },
-                ].map((item) => (
-                  <div key={item.phase} className="border border-stone-800/20 p-3 bg-stone-900/5 rounded">
-                    <h4 className="font-heading text-[10px] uppercase mb-1">{item.phase}</h4>
-                    <p className="font-body text-[9px] leading-tight italic">{item.desc}</p>
-                  </div>
-                ))}
+            {/* Conspirators Card */}
+            <div className="border border-stone-800/20 p-4 bg-stone-900/5 rounded">
+              {/* Image placeholder - replace src with your image */}
+              <img
+                src={ConspiratorsImage}
+                alt="Conspirators"
+                className="w-full h-20 object-cover rounded mb-3"
+              />
+              <h4 className="font-heading text-[11px] font-bold uppercase mb-2 tracking-widest">
+                Conspirators
+              </h4>
+              <p className="font-body text-[9px] leading-relaxed italic">
+                Each night, the Conspirators secretly agree on one citizen to eliminate. 
+                During the day, they blend in — denying, deflecting, and casting doubt 
+                on innocent players.
+              </p>
+            </div>
+
+            {/* Citizens Card */}
+            <div className="border border-stone-800/20 p-4 bg-stone-900/5 rounded">
+              {/* Image placeholder - replace src with your image */}
+               <img
+                src={CitizenImage}
+                alt="Citizens"
+                className="w-full h-20 object-cover rounded mb-3"
+              />
+              <h4 className="font-heading text-[11px] font-bold uppercase mb-2 tracking-widest">
+                Citizens
+              </h4>
+              <p className="font-body text-[9px] leading-relaxed italic">
+                You have a private clue nobody else knows. Use it to find contradictions, 
+                expose lies, and convince others. Your only weapon is your reasoning — 
+                and your vote.
+              </p>
+            </div>
+
+          </div>
+        )}
+
+        {/* The Cycle Tab */}
+        {activeTab === 'The Cycle' && (
+          <div className="text-stone-800 space-y-2">
+            {[
+              {
+                phase: '1 — Preparation',
+                desc: 'Teams are assigned secretly. Each player receives their team and a unique private clue. Read it alone. Tell no one.'
+              },
+              {
+                phase: '2 — The Night',
+                desc: 'Conspirators secretly select one citizen to eliminate. Citizens wait. All actions are anonymous. Nobody sees who decided what.'
+              },
+              {
+                phase: '3 — The Interrogation',
+                desc: "The night's elimination is revealed. Everyone discusses. Use your private clue to find contradictions. Nobody has the full picture — that's the point."
+              },
+              {
+                phase: '4 — The Accusations',
+                desc: 'Direct accusations open. Make your case. Challenge others. This is your last chance to argue before the vote.'
+              },
+              {
+                phase: '5 — The Verdict',
+                desc: 'Everyone votes simultaneously. The player with the most votes is eliminated and their team revealed. All Conspirators gone? Citizens win. Wrong vote? The night falls again.'
+              },
+            ].map((item) => (
+              <div key={item.phase} className="border border-stone-800/20 p-3 bg-stone-900/5 rounded">
+                <h4 className="font-heading text-[10px] font-bold uppercase mb-1 tracking-widest">
+                  {item.phase}
+                </h4>
+                <p className="font-body text-[9px] leading-relaxed italic">
+                  {item.desc}
+                </p>
               </div>
-            )}
+            ))}
+          </div>
+        )}
 
           </div>
 

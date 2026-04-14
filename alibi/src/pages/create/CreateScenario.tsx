@@ -1,24 +1,25 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import PageLayout from '../../components/ui/PageLayout'
+import { useGame } from '../../context/GameContext'
+import { userCreateRoom } from '../../hooks/userCreateRoom'
 
 const SCENARIOS = [
   {
-    id: 1,
+    id: 'ddcfd532-62c2-4d61-a07b-4ffbb36d8855',
     title: 'The Museum Heist',
     description: 'A priceless artifact has vanished from the city museum overnight.',
     difficulty: 'Easy',
     icon: '🏛️'
   },
   {
-    id: 2,
+    id: '39d3fd85-306c-480b-b126-da53f8ac3630',
     title: 'The Poisoned Gala',
     description: 'A guest was found dead at the mayors annual dinner party.',
     difficulty: 'Medium',
     icon: '🍷'
   },
   {
-    id: 3,
+    id: 'e657cb00-95bc-4a8d-8213-a7cb546ade2a',
     title: 'The Vanishing Witness',
     description: 'The only witness to a crime has disappeared without a trace.',
     difficulty: 'Hard',
@@ -27,13 +28,17 @@ const SCENARIOS = [
 ]
 
 export default function CreateScenario() {
-  const navigate = useNavigate()
-  const [selected, setSelected] = useState<number | null>(null)
+ 
+  const [selected, setSelected] = useState<string | null>(null)
+  const { setScenarioId } = useGame()
+  const { createRoom, loading, error } = userCreateRoom()
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!selected) return
-    // TODO: create room in Supabase
-    navigate('/room/ABC123')   // temporary hardcoded code
+
+   
+    setScenarioId(selected)
+    await createRoom(selected)
   }
 
   return (
@@ -64,7 +69,7 @@ export default function CreateScenario() {
               <h3 className="font-heading text-alibi-gold text-sm uppercase tracking-wide mb-2">
                 {scenario.title}
               </h3>
-                            <p className="font-body text-alibi-cream/70 text-xs leading-relaxed mb-4">
+              <p className="font-body text-alibi-cream/70 text-xs leading-relaxed mb-4">
                 {scenario.description}
               </p>
               <span className={`font-mono text-[9px] uppercase tracking-widest px-2 py-1 rounded-full ${
@@ -85,12 +90,17 @@ export default function CreateScenario() {
           <div className="w-2 h-2 rounded-full bg-alibi-gold" />
         </div>
 
+        {/* Error */}
+        {error && (
+          <p className="font-body text-alibi-red text-xs mb-4">{error}</p>
+        )}
+
         {/* Create Room Button */}
         <button
           onClick={handleCreate}
-          disabled={!selected}
+          disabled={!selected || loading}
           className={`font-heading font-bold transition ${
-            selected
+            selected && !loading
               ? 'hover:opacity-90 text-alibi-black'
               : 'opacity-30 cursor-not-allowed text-alibi-black'
           }`}
@@ -103,7 +113,7 @@ export default function CreateScenario() {
             background: '#F9A856',
           }}
         >
-          CREATE ROOM
+          {loading ? 'CREATING...' : 'CREATE ROOM'}
         </button>
 
       </div>

@@ -46,7 +46,7 @@ export const userCreateRoom = () => {
 
             console.log('Room created:', room)
 
-            // Create host player
+            
             const sessionId = crypto.randomUUID()
             localStorage.setItem('alibi_session_id', sessionId)
 
@@ -70,6 +70,11 @@ export const userCreateRoom = () => {
             setRoomCode(code)
             setIsHost(true)
             navigate(`/room/${code}`)
+
+            sessionStorage.setItem('alibi_session_id', sessionId)
+            sessionStorage.setItem('alibi_player_name', playerName)
+            localStorage.setItem('alibi_room_code', code)
+            sessionStorage.setItem('alibi_is_host', 'true')
 
             } catch (err) {
             console.error('Create room failed:', err)

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useGame } from '../context/GameContext'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
+import { useStartGame } from '../hooks/useStartGame'
+
 
 interface Player {
   id: string
@@ -14,13 +15,20 @@ interface Player {
 }
 
 export default function Room() {
-  const { code } = useParams()
-  const navigate = useNavigate()
-  const { playerName, isHost } = useGame()
-  const [players, setPlayers] = useState<Player[]>([])
-  const [room, setRoom] = useState<any>(null)
-  const [copied, setCopied] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const { code }   = useParams()
+  const navigate   = useNavigate()
+  const [players, setPlayers]   = useState<Player[]>([])
+  const [room, setRoom]         = useState<any>(null)
+  const [copied, setCopied]     = useState(false)
+  const [loading, setLoading]   = useState(true)
+  const [myPlayer, setMyPlayer] = useState<any>(null)
+
+  
+  const sessionId  = sessionStorage.getItem('alibi_session_id')
+  const playerName = sessionStorage.getItem('alibi_player_name')
+  const isHost     = sessionStorage.getItem('alibi_is_host') === 'true'
+
+  const { startGame, loading: startLoading } = useStartGame()
 
   const fetchPlayers = async (roomId: string) => {
     const { data } = await supabase
@@ -28,13 +36,23 @@ export default function Room() {
       .select('*')
       .eq('room_id', roomId)
 
-    if (data) setPlayers(data)
+    if (data) {
+      setPlayers(data)
+      // Find my player by session
+      const me = data.find(p => p.session_id === sessionId)
+      if (me) setMyPlayer(me)
+    }
   }
 
   useEffect(() => {
     if (!code) return
+    if (!sessionId) {
+      navigate('/')
+      return
+    }
 
-    let channel: any = null
+    let playersChannel: any = null
+    let roomChannel: any    = null
 
     const init = async () => {
       // Step 1 - find room
@@ -57,9 +75,8 @@ export default function Room() {
       await fetchPlayers(foundRoom.id)
       setLoading(false)
 
-      // Step 3 - subscribe AFTER we have room
-      // ✅ .on() must be called BEFORE .subscribe()
-      channel = supabase
+      
+      playersChannel = supabase
         .channel(`room-players-${foundRoom.id}`)
         .on('postgres_changes', {
           event: '*',
@@ -70,13 +87,31 @@ export default function Room() {
           fetchPlayers(foundRoom.id)
         })
         .subscribe()
+
+      
+      roomChannel = supabase
+        .channel(`room-phase-${foundRoom.id}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'rooms',
+          filter: `id=eq.${foundRoom.id}`
+        }, (payload) => {
+          const updatedRoom = payload.new
+          console.log('Phase changed:', updatedRoom.phase)
+
+          if (updatedRoom.phase === 'role_reveal') {
+            navigate(`/room/${code}/role-reveal`)
+          }
+        })
+        .subscribe()
     }
 
     init()
 
-    // Cleanup on unmount
     return () => {
-      if (channel) supabase.removeChannel(channel)
+      if (playersChannel) supabase.removeChannel(playersChannel)
+      if (roomChannel)    supabase.removeChannel(roomChannel)
     }
   }, [code])
 
@@ -88,10 +123,7 @@ export default function Room() {
 
   const handleStartGame = async () => {
     if (!room) return
-    await supabase
-      .from('rooms')
-      .update({ phase: 'night' })
-      .eq('id', room.id)
+    await startGame(room.id, room.scenario_id)
   }
 
   const canStart = players.length >= (room?.player_count || 5)
@@ -100,12 +132,9 @@ export default function Room() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{
-          backgroundImage: `url(${bg})`,
-          backgroundSize: 'cover'
-        }}
+        style={{ backgroundImage: `url(${bg})`, backgroundSize: 'cover' }}
       >
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black/60" />
         <p className="relative z-10 font-heading text-alibi-gold text-xl animate-pulse">
           Loading...
         </p>
@@ -122,23 +151,28 @@ export default function Room() {
         backgroundPosition: 'center'
       }}
     >
-      {/* Dark overlay */}
+      
       <div className="absolute inset-0 bg-black/50 z-0" />
 
-      {/* Top Bar */}
+      
       <div className="relative z-10 flex justify-between items-center px-8 py-6">
         <img src={logo} alt="Alibi" className="w-16" />
         <div className="flex items-center gap-2">
           <span className="font-heading text-alibi-gold text-sm">
-            👤 {playerName || localStorage.getItem('alibi_player_name')}
+            👤 {playerName}
           </span>
+          {isHost && (
+            <span className="font-mono text-[9px] text-alibi-gold border border-alibi-gold px-2 py-0.5 rounded-full uppercase">
+              Host
+            </span>
+          )}
         </div>
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center px-8 pb-8">
 
-        {/* Room Code */}
+        
         <div className="text-center mb-8">
           <p className="font-body text-alibi-cream/60 text-sm uppercase tracking-widest mb-2">
             Room Code
@@ -169,7 +203,11 @@ export default function Room() {
           {players.map((player) => (
             <div
               key={player.id}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-alibi-gold/30 bg-alibi-gold/5"
+              className={`flex flex-col items-center gap-2 p-4 rounded-2xl border ${
+                player.session_id === sessionId
+                  ? 'border-alibi-gold bg-alibi-gold/10'
+                  : 'border-alibi-gold/30 bg-alibi-gold/5'
+              }`}
             >
               <div className="w-12 h-12 rounded-full bg-alibi-gold/20 flex items-center justify-center">
                 <span className="text-xl">👤</span>
@@ -177,16 +215,25 @@ export default function Room() {
               <p className="font-heading text-alibi-cream text-xs uppercase tracking-wide text-center">
                 {player.fake_name}
               </p>
-              {player.is_host && (
-                <span className="font-mono text-[8px] text-alibi-gold uppercase tracking-widest">
-                  Host
-                </span>
-              )}
+              <div className="flex flex-col items-center gap-1">
+                {player.is_host && (
+                  <span className="font-mono text-[8px] text-alibi-gold uppercase tracking-widest">
+                    Host
+                  </span>
+                )}
+                {player.session_id === sessionId && (
+                  <span className="font-mono text-[8px] text-alibi-cream/40 uppercase tracking-widest">
+                    You
+                  </span>
+                )}
+              </div>
             </div>
           ))}
 
           {/* Empty Slots */}
-          {Array.from({ length: (room?.player_count || 5) - players.length }).map((_, i) => (
+          {Array.from({
+            length: Math.max(0, (room?.player_count || 5) - players.length)
+          }).map((_, i) => (
             <div
               key={`empty-${i}`}
               className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-alibi-cream/10 bg-black/20"
@@ -207,9 +254,9 @@ export default function Room() {
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={handleStartGame}
-              disabled={!canStart}
+              disabled={!canStart || startLoading}
               className={`font-heading font-bold transition ${
-                canStart
+                canStart && !startLoading
                   ? 'text-alibi-black hover:opacity-90'
                   : 'text-alibi-black opacity-30 cursor-not-allowed'
               }`}
@@ -222,7 +269,7 @@ export default function Room() {
                 background: '#F9A856',
               }}
             >
-              START GAME
+              {startLoading ? 'STARTING...' : 'START GAME'}
             </button>
             {!canStart && (
               <p className="font-body text-alibi-cream/40 text-xs">
@@ -233,9 +280,12 @@ export default function Room() {
         ) : (
           <div className="flex flex-col items-center gap-2">
             <div className="flex gap-1">
-              <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
+                style={{ animationDelay: '0ms' }} />
+              <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
+                style={{ animationDelay: '150ms' }} />
+              <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
+                style={{ animationDelay: '300ms' }} />
             </div>
             <p className="font-body text-alibi-cream/50 text-sm italic">
               Waiting for host to start the game...

@@ -10,7 +10,7 @@ export const useJoinRoom = () => {
   const [error, setError] = useState('')
 
   const joinRoom = async (code: string) => {
-    const name = playerName || localStorage.getItem('alibi_player_name') || ''
+    const name = playerName || sessionStorage.getItem('alibi_player_name') || ''
 
     if (!name) {
       setError('Missing player name')
@@ -21,7 +21,7 @@ export const useJoinRoom = () => {
     setError('')
 
     try {
-      // Step 1 - fetch all rooms and match case insensitive
+      
       const { data: allRooms, error: fetchError } = await supabase
         .from('rooms')
         .select('*')
@@ -42,14 +42,14 @@ export const useJoinRoom = () => {
         return
       }
 
-      // Step 2 - check phase
+     
       if (room.phase !== 'lobby') {
         setError('Game already started. You cannot join.')
         setLoading(false)
         return
       }
 
-      // Step 3 - check room is not full
+      //  check room is not full
       const { count } = await supabase
         .from('players')
         .select('*', { count: 'exact', head: true })
@@ -61,7 +61,7 @@ export const useJoinRoom = () => {
         return
       }
 
-      // Step 4 - create player
+      
       const sessionId = crypto.randomUUID()
       localStorage.setItem('alibi_session_id', sessionId)
 
@@ -81,10 +81,15 @@ export const useJoinRoom = () => {
         return
       }
 
-      // Step 5 - redirect
+    
       setRoomCode(code.toUpperCase())
       setIsHost(false)
       navigate(`/room/${code.toUpperCase()}`)
+
+      sessionStorage.setItem('alibi_session_id', sessionId)
+      sessionStorage.setItem('alibi_player_name', name)
+      localStorage.setItem('alibi_room_code', code.toUpperCase())
+      sessionStorage.setItem('alibi_is_host', 'false')
 
     } catch (err) {
       setError('Failed to join room. Try again.')

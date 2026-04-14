@@ -5,6 +5,7 @@ import HowToPlay from './pages/HowToPlay.tsx'
 import CreateName from './pages/create/CreateName.tsx'
 import CreatePlayers from './pages/create/CreatePlayers.tsx'
 import CreateScenario from './pages/create/CreateScenario.tsx'
+import RoleReveal from './pages/RoleReveal.tsx'
 
 import JoinCode from './pages/join/JoinCode.tsx'
 import JoinName from './pages/join/JoinName.tsx'
@@ -19,6 +20,7 @@ function App() {
         <Route path="/create/name"     element={<CreateName />} />
         <Route path="/create/players"  element={<CreatePlayers />} />
         <Route path="/create/scenario" element={<CreateScenario />} />
+        <Route path="/room/:code/role-reveal"     element={<RoleReveal />} />
         
         <Route path="/join/name"  element={<JoinName />} />
         <Route path="/join/code"  element={<JoinCode />} />

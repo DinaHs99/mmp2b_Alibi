@@ -21,7 +21,7 @@ export default function Room() {
   const [room, setRoom]         = useState<any>(null)
   const [copied, setCopied]     = useState(false)
   const [loading, setLoading]   = useState(true)
-  const [myPlayer, setMyPlayer] = useState<any>(null)
+ 
 
   
   const sessionId  = sessionStorage.getItem('alibi_session_id')
@@ -38,9 +38,7 @@ export default function Room() {
 
     if (data) {
       setPlayers(data)
-      // Find my player by session
-      const me = data.find(p => p.session_id === sessionId)
-      if (me) setMyPlayer(me)
+    
     }
   }
 

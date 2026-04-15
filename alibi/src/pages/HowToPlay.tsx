@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import bg from '../assets/bg2.png';
 import paper from '../assets/paper1.png';

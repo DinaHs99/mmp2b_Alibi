@@ -456,6 +456,27 @@ export default function Discussion() {
           </p>
         )}
 
+        // Visible to host even if not all players ready
+        {isHost && !timerStarted && (
+          <button
+            onClick={ () => {
+                setTimerStarted(true)
+                startTimer()
+            }}
+            className="font-heading text-alibi-black font-bold hover:opacity-90 transition"
+            style={{
+              display: 'inline-flex',
+              padding: '19px 47px 18px 49px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: '20px',
+              background: '#F9A856',
+            }}
+          >
+            START DISCUSSION
+          </button>
+        )}
+
         {isHost && timerStarted && (
           <button
             onClick={() => moveToVoting(room.id)}

@@ -21,7 +21,7 @@ export default function Home() {
         alt=""
         className="absolute top-10 left-8 w-32 opacity-90"
         style={{ 
-            left: '926px',
+            left: '1060px',
             top: '629px',
             width: '480px' }}   
       />

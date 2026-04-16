@@ -56,7 +56,7 @@ export default function CreateScenario() {
 
   return (
     <PageLayout showBackButton backTo="/create/players">
-      <div className="flex flex-col items-center text-center">
+      <div className="flex flex-col pt-16 items-center text-center">
 
         {/* Title */}
         <h2 className="font-heading text-alibi-gold text-2xl uppercase tracking-widest mb-2">
@@ -67,18 +67,18 @@ export default function CreateScenario() {
         </p>
 
         {/* Scenario Cards */}
-        <div className="flex gap-6 mb-8">
+        <div className="flex flex-col md:flex-row gap-4 p-8 mb-8 w-full md:w-auto overflow-x-auto pb-2">
           {SCENARIOS.map(scenario => (
             <button
               key={scenario.id}
               onClick={() => setSelected(scenario.id)}
-              className={`w-52 p-6 rounded-2xl border-2 text-left transition-all ${
+              className={`w-full md:w-52 p-5 rounded-2xl border-2 text-left transition-all flex-shrink-0 ${
                 selected === scenario.id
                   ? 'border-alibi-gold bg-alibi-gold/10'
                   : 'border-alibi-cream/20 bg-black/30 hover:border-alibi-gold/50'
               }`}
             >
-              <div className="text-4xl mb-4">{scenario.icon}</div>
+              <div className="text-4xl mb-3">{scenario.icon}</div>
               <h3 className="font-heading text-alibi-gold text-sm uppercase tracking-wide mb-2">
                 {scenario.title}
               </h3>
@@ -97,7 +97,7 @@ export default function CreateScenario() {
         </div>
 
         {/* Step dots */}
-        <div className="flex gap-2 my-6">
+        <div className="flex gap-2 my-4">
           <div className="w-2 h-2 rounded-full bg-alibi-gold/50" />
           <div className="w-2 h-2 rounded-full bg-alibi-gold/50" />
           <div className="w-2 h-2 rounded-full bg-alibi-gold" />

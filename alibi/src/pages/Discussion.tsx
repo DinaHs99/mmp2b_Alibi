@@ -454,7 +454,6 @@ export default function Discussion() {
           </p>
         )}
 
-        // Visible to host even if not all players ready
         {isHost && !timerStarted && (
           <button
             onClick={ () => {

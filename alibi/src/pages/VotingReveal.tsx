@@ -11,16 +11,13 @@ export default function VotingReveal(){
   const { code } = useParams()
   const navigate = useNavigate()
   const [room, setRoom]                   = useState<any>(null)
-  const [players, setPlayers]             = useState<any[]>([])
   const [eliminated, setEliminated]       = useState<any>(null)
-  const [winner, setWinner]               = useState<'citizens' | 'conspirators' | null>(null)
   const [loading, setLoading]             = useState(true)
   const [revealed, setRevealed]           = useState(false)
   const [processing, setProcessing]       = useState(false)
   const [countdown, setCountdown]         = useState<number | null>(null)
 
   const isHost    = sessionStorage.getItem('alibi_is_host') === 'true'
-  const sessionId = sessionStorage.getItem('alibi_session_id')
 
   useEffect(() => {
     if (!code) return
@@ -47,7 +44,6 @@ export default function VotingReveal(){
       .eq('room_id', foundRoom.id)
 
     if (!playersData) return
-    setPlayers(playersData)
 
     // Get votes for this round
     const { data: votesData } = await supabase
@@ -103,7 +99,6 @@ export default function VotingReveal(){
 
     // Check win condition
     const result = checkWinCondition(updatedPlayers)
-    setWinner(result)
 
     await new Promise(resolve => setTimeout(resolve,6000))
 

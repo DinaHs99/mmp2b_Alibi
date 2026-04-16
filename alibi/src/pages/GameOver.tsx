@@ -9,7 +9,6 @@ import citizensImg from '../assets/citizen.png'
 export default function GameOver() {
   const { code } = useParams()
   const navigate = useNavigate()
-  const [room, setRoom]       = useState<any>(null)
   const [players, setPlayers] = useState<any[]>([])
   const [winner, setWinner]   = useState<'citizens' | 'conspirators' | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,7 +28,6 @@ export default function GameOver() {
     )
 
     if (!foundRoom) { navigate('/'); return }
-    setRoom(foundRoom)
 
     const { data: playersData } = await supabase
       .from('players')

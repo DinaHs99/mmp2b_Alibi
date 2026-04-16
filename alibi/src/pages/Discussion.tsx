@@ -244,7 +244,6 @@ export default function Discussion() {
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundImage: `url(${bg})`, backgroundSize: 'cover' }}
       >
-        <div className="absolute inset-0 bg-black/60" />
         <p className="relative z-10 font-heading text-alibi-gold text-xl animate-pulse">
           Loading...
         </p>
@@ -263,7 +262,6 @@ export default function Discussion() {
         backgroundPosition: 'center'
       }}
     >
-      <div className="absolute inset-0 bg-black/60 z-0" />
 
       
       <div className="relative z-10 flex-shrink-0">

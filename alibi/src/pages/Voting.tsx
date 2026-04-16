@@ -129,6 +129,8 @@ export default function Voting() {
       .from('rooms')
       .update({ phase: 'reveal' })
       .eq('id', room.id)
+
+    navigate(`/room/${room.code}/voting-reveal`)
   }
 
   const allVoted = votes.length === players.length 
@@ -140,7 +142,6 @@ export default function Voting() {
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundImage: `url(${bg})`, backgroundSize: 'cover' }}
       >
-        <div className="absolute inset-0 bg-black/60" />
         <p className="relative z-10 font-heading text-alibi-gold text-xl animate-pulse">
           Loading...
         </p>
@@ -158,7 +159,7 @@ export default function Voting() {
         backgroundPosition: 'center'
       }}
     >
-      <div className="absolute inset-0 bg-black/60 z-0" />
+      
 
       {/* Top Bar */}
       <div className="relative z-10 flex-shrink-0 flex justify-between items-center px-6 py-4">

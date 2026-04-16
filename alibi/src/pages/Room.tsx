@@ -132,7 +132,6 @@ export default function Room() {
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundImage: `url(${bg})`, backgroundSize: 'cover' }}
       >
-        <div className="absolute inset-0 bg-black/60" />
         <p className="relative z-10 font-heading text-alibi-gold text-xl animate-pulse">
           Loading...
         </p>
@@ -150,7 +149,6 @@ export default function Room() {
       }}
     >
       
-      <div className="absolute inset-0 bg-black/50 z-0" />
 
       
       <div className="relative z-10 flex justify-between items-center px-8 py-6">

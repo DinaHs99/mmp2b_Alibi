@@ -6,7 +6,7 @@ interface PageLayoutProps {
   children: React.ReactNode
   showBackButton?: boolean
   backTo?: string
-  showSmallLogo?: boolean   // after scenario page logo goes small
+  showSmallLogo?: boolean   
 }
 
 export default function PageLayout({

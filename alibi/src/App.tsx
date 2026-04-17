@@ -28,7 +28,7 @@ function App() {
         <Route path="/room/:code/discussion"       element={<Discussion />} />
         <Route path="/room/:code/voting"           element={<Voting />} />
         <Route path="/room/:code/voting-reveal"    element={<VotingReveal />} />
-        <Route path="/room/:code/game-over"        element={<GameOver />} />
+        <Route path="/room/:code/gameover"        element={<GameOver />} />
         
         <Route path="/join/name"  element={<JoinName />} />
         <Route path="/join/code"  element={<JoinCode />} />

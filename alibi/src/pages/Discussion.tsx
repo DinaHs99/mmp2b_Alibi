@@ -48,8 +48,12 @@ export default function Discussion() {
   useEffect(() => {
     if (!code) return
     init()
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
+      supabase.getChannels().forEach(channel => {
+        supabase.removeChannel(channel)
+      })
     }
   }, [code])
 
@@ -69,6 +73,9 @@ export default function Discussion() {
   }, [players])
 
   const init = async () => {
+    supabase.getChannels().forEach(channel => {
+      supabase.removeChannel(channel)
+    })
     const { data: allRooms } = await supabase
       .from('rooms')
       .select('*')

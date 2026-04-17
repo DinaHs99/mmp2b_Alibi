@@ -14,22 +14,41 @@ export const checkWinCondition = (players: Player[]): 'citizens' | 'conspirators
 
 }
 
-export const getEliminatedPlayer = (votes: any[], players: Player[]) => {
-    const voteCounts: Record<string, number> = {}
+export const getEliminatedPlayer = (votes: any[], players: any[]) => {
+  if (votes.length === 0) return null
 
-    votes.forEach(vote => {
-        voteCounts[vote.target_id] = (voteCounts[vote.target_id] || 0) + 1
-    })
+  const voteCounts: Record<string, number> = {}
+  votes.forEach(vote => {
+    voteCounts[vote.target_id] = (voteCounts[vote.target_id] || 0) + 1
+  })
 
-    let maxVotes = 0
-    let eliminatedPlayerId: string | null = null
+  const maxVotes = Math.max(...Object.values(voteCounts))
 
-    for (const playerId in voteCounts) {
-        if (voteCounts[playerId] > maxVotes) {
-            maxVotes = voteCounts[playerId]
-            eliminatedPlayerId = playerId
-        }                                           
+  const topPlayerIds = Object.entries(voteCounts)
+    .filter(([_, count]) => count === maxVotes)
+    .map(([id]) => id)
 
-    }
-    return players.find(player => player.id === eliminatedPlayerId)
+
+  if (topPlayerIds.length > 1) return null
+
+  return players.find(p => p.id === topPlayerIds[0]) || null
+}
+
+export const getTiedPlayers = (votes: any[], players: any[]) => {
+  if (votes.length === 0) return []
+
+  const voteCounts: Record<string, number> = {}
+  votes.forEach(vote => {
+    voteCounts[vote.target_id] = (voteCounts[vote.target_id] || 0) + 1
+  })
+
+  const maxVotes = Math.max(...Object.values(voteCounts))
+
+  const topPlayerIds = Object.entries(voteCounts)
+    .filter(([_, count]) => count === maxVotes)
+    .map(([id]) => id)
+
+  if (topPlayerIds.length <= 1) return []
+
+  return players.filter(p => topPlayerIds.includes(p.id))
 }

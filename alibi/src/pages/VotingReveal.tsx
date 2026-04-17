@@ -1,31 +1,42 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { checkWinCondition, getEliminatedPlayer } from '../lib/checkWin'
+import { checkWinCondition, getEliminatedPlayer, getTiedPlayers } from '../lib/checkWin'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import conspiratorsImg from '../assets/conspirator.png'
 import citizensImg from '../assets/citizen.png'
 
-export default function VotingReveal(){
+export default function VotingReveal() {
   const { code } = useParams()
   const navigate = useNavigate()
-  const [room, setRoom]                   = useState<any>(null)
-  const [eliminated, setEliminated]       = useState<any>(null)
-  const [loading, setLoading]             = useState(true)
-  const [revealed, setRevealed]           = useState(false)
-  const [processing, setProcessing]       = useState(false)
-  const [countdown, setCountdown]         = useState<number | null>(null)
+  const [room, setRoom]         = useState<any>(null)
+  const [eliminated, setEliminated] = useState<any>(null)
+  const [loading, setLoading]   = useState(true)
+  const [revealed, setRevealed] = useState(false)
+  const [processing, setProcessing] = useState(false)
+  const [tiedPlayers, setTiedPlayers] = useState<any[]>([])
+  const [isTied, setIsTied] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(null)
 
-  const isHost    = sessionStorage.getItem('alibi_is_host') === 'true'
+  const isHost = sessionStorage.getItem('alibi_is_host') === 'true'
 
   useEffect(() => {
     if (!code) return
     init()
+    return () => {
+            supabase.getChannels().forEach(channel => {
+            supabase.removeChannel(channel)
+            })
+    }
   }, [code])
 
   const init = async () => {
-    // Get room
+
+    supabase.getChannels().forEach(channel => {
+        supabase.removeChannel(channel)
+    })
+   
     const { data: allRooms } = await supabase
       .from('rooms')
       .select('*')
@@ -37,7 +48,10 @@ export default function VotingReveal(){
     if (!foundRoom) { navigate('/'); return }
     setRoom(foundRoom)
 
-    // Get all players
+    if (foundRoom.revealed === true) {
+      setRevealed(true)
+    }
+
     const { data: playersData } = await supabase
       .from('players')
       .select('*')
@@ -45,7 +59,6 @@ export default function VotingReveal(){
 
     if (!playersData) return
 
-    // Get votes for this round
     const { data: votesData } = await supabase
       .from('votes')
       .select('*')
@@ -54,89 +67,140 @@ export default function VotingReveal(){
 
     if (!votesData) return
 
-    // Find eliminated player
-    const alivePlayers    = playersData.filter(p => p.status === 'alive')
+    const alivePlayers     = playersData.filter(p => p.status === 'alive')
     const eliminatedPlayer = getEliminatedPlayer(votesData, alivePlayers)
+
+    if (!eliminatedPlayer && votesData.length >0) {
+        const tied = getTiedPlayers(votesData, alivePlayers)
+        setTiedPlayers(tied)
+        setIsTied(true)
+    }
     setEliminated(eliminatedPlayer)
 
     setLoading(false)
 
-    // Subscribe to room phase changes
     supabase
-      .channel(`reveal-phase-${foundRoom.id}`)
+      .channel(`reveal-room-${foundRoom.id}`)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'rooms',
         filter: `id=eq.${foundRoom.id}`
       }, (payload) => {
-        const phase = payload.new.phase
-        if (phase === 'discussion') navigate(`/room/${code}/discussion`)
-        if (phase === 'gameover')   navigate(`/room/${code}/gameover`)
+        console.log('VotingReveal room update:', payload.new)
+
+       
+        if (payload.new.revealed === true) {
+          setRevealed(true)
+          startCountdown()
+        }
+
+        if (payload.new.phase === 'voting') {
+            navigate(`/room/${code}/voting`)
+        }
+
+      
+        if (payload.new.phase === 'discussion') {
+          navigate(`/room/${code}/discussion`)
+        }
+        if (payload.new.phase === 'gameover') {
+          navigate(`/room/${code}/gameover`)
+        }
       })
       .subscribe()
   }
 
-  const handleReveal = async () => {
-    setRevealed(true)
+    const handleReveal = async () => {
+        if (!isHost || !room) return
+        setProcessing(true)
 
-    if (!isHost || !eliminated || !room) return
-    setProcessing(true)
+        
+        if (isTied) {
+            // Step 1 - Remove votes
+            await supabase
+            .from('votes')
+            .delete()
+            .eq('room_id', room.id)
+            .eq('round', room.round)
 
-    // Eliminate player in DB
-    await supabase
-      .from('players')
-      .update({ status: 'eliminated' })
-      .eq('id', eliminated.id)
+           // Step 2 - Save tied players
+            await supabase
+            .from('rooms')
+            .update({
+                tie_player_ids: tiedPlayers.map(p => p.id),
+            })
+            .eq('id', room.id)
 
-    // Get updated players after elimination
-    const { data: updatedPlayers } = await supabase
-      .from('players')
-      .select('*')
-      .eq('room_id', room.id)
+            
+            await new Promise(resolve => setTimeout(resolve, 500))
 
-    if (!updatedPlayers) return
+            // Step 4 - Change phase to voting 
+            await supabase
+            .from('rooms')
+            .update({ phase: 'voting' })
+            .eq('id', room.id)
 
-    // Check win condition
-    const result = checkWinCondition(updatedPlayers)
+            setProcessing(false)
+            return
+        }
 
-    await new Promise(resolve => setTimeout(resolve,6000))
+        
+        if (!eliminated) return
 
-    if (result) {
-      // Someone won → game over
-      await supabase
-        .from('rooms')
-        .update({ phase: 'gameover' })
-        .eq('id', room.id)
-    } else {
-      // No winner → next round
-      await supabase
-        .from('rooms')
-        .update({
-          phase: 'discussion',
-          round: room.round + 1,
-        })
-        .eq('id', room.id)
+        await supabase
+            .from('players')
+            .update({ status: 'eliminated' })
+            .eq('id', eliminated.id)
 
-      // Reset is_ready for all players
-      await supabase
-        .from('players')
-        .update({ is_ready: false })
-        .eq('room_id', room.id)
+        await supabase
+            .from('rooms')
+            .update({ revealed: true })
+            .eq('id', room.id)
+
+        const { data: updatedPlayers } = await supabase
+            .from('players')
+            .select('*')
+            .eq('room_id', room.id)
+
+        if (!updatedPlayers) return
+
+        const result = checkWinCondition(updatedPlayers)
+        setProcessing(false)
+
+        await new Promise(resolve => setTimeout(resolve, 5000))
+
+        if (result) {
+            await supabase
+            .from('rooms')
+            .update({ phase: 'gameover' })
+            .eq('id', room.id)
+        } else {
+            await supabase
+            .from('rooms')
+            .update({
+                phase: 'discussion',
+                round: room.round + 1,
+                revealed: false,
+                tie_player_ids: null, 
+            })
+            .eq('id', room.id)
+
+            await supabase
+            .from('players')
+            .update({ is_ready: false })
+            .eq('room_id', room.id)
+            .neq('status', 'eliminated')
+        }
     }
-
-    setProcessing(false)
-
-    let count = 5
-    const interval = setInterval(() => {
-      count--
-      setCountdown(count)
-      if (count === 0) {
-        clearInterval(interval)
-        navigate(`/room/${code}/discussion`)
-      }
-    }, 1000)
-  }
+    const startCountdown = () => {
+        let count = 5
+        setCountdown(count)
+        const countInterval = setInterval(() => {
+            count -= 1
+            setCountdown(count)
+            if (count <= 0) clearInterval(countInterval)
+        }, 1000)
+    }
 
   if (loading) {
     return (
@@ -144,8 +208,7 @@ export default function VotingReveal(){
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundImage: `url(${bg})`, backgroundSize: 'cover' }}
       >
-       
-        <p className="relative z-10 font-heading text-alibi-gold text-xl animate-pulse">
+        <p className="font-heading text-alibi-gold text-xl animate-pulse">
           The verdict is in...
         </p>
       </div>
@@ -164,7 +227,6 @@ export default function VotingReveal(){
         backgroundPosition: 'center'
       }}
     >
-
       {/* Top Bar */}
       <div className="relative z-10 flex-shrink-0 flex justify-between items-center px-6 py-4">
         <img src={logo} alt="Alibi" className="w-10" />
@@ -175,68 +237,104 @@ export default function VotingReveal(){
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-8">
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-8 overflow-y-auto"
+        style={{ scrollbarWidth: 'none' }}
+      >
 
         {!revealed ? (
-          // Before reveal
           <div className="flex flex-col items-center gap-8 text-center">
-            <h2 className="font-heading text-alibi-gold text-3xl uppercase tracking-widest">
-              The Verdict Is In
-            </h2>
-            <p className="font-body text-alibi-cream/60 text-sm italic max-w-sm">
-              The votes have been counted. One player will be eliminated. Are you ready to see who it is?
-            </p>
-            {isHost && (
-              <button
+            {/*  Tie message */}
+            {isTied? (
+            <>
+                <h2 className="font-heading text-alibi-gold text-3xl uppercase tracking-widest">
+                It's A Tie
+                </h2>
+                <p className="font-body text-alibi-cream/60 text-sm italic max-w-sm">
+                The votes are tied between these players. A revote will begin.
+                </p>
+                {/* Show tied players */}
+                <div className="flex gap-3">
+                {tiedPlayers.map(player => (
+                    <div
+                    key={player.id}
+                    className="border border-alibi-red/50 bg-alibi-red/10 rounded-xl px-4 py-3"
+                    >
+                    <p className="font-heading text-alibi-cream text-sm uppercase">
+                        {player.fake_name}
+                    </p>
+                    <p className="font-mono text-alibi-cream/40 text-[9px]">
+                        {player.occupation}
+                    </p>
+                    </div>
+                ))}
+                </div>
+            </>
+            ) : (
+            <>
+                <h2 className="font-heading text-alibi-gold text-3xl uppercase tracking-widest">
+                The Verdict Is In
+                </h2>
+                <p className="font-body text-alibi-cream/60 text-sm italic max-w-sm">
+                The votes have been counted. One player will be eliminated.
+                </p>
+            </>
+            )}
+
+            {/* Host button */}
+            {isHost && !processing && (
+            <button
                 onClick={handleReveal}
                 className="font-heading text-alibi-black font-bold hover:opacity-90 transition"
                 style={{
-                  display: 'inline-flex',
-                  padding: '19px 47px 18px 49px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: '20px',
-                  background: '#F9A856',
+                display: 'inline-flex',
+                padding: '19px 47px 18px 49px',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: '20px',
+                background: '#F9A856',
                 }}
-              >
-                REVEAL
-              </button>
+            >
+                {isTied? 'START REVOTE' : 'REVEAL'}
+            </button>
             )}
+
             {!isHost && (
-              <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2">
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
+                <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
                     style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
+                <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
                     style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
+                <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
                     style={{ animationDelay: '300ms' }} />
                 </div>
                 <p className="font-body text-alibi-cream/40 text-sm italic">
-                  Waiting for host to reveal...
+                {isTied? 'Tie detected. Waiting for host...' : 'Waiting for host to reveal...'}
                 </p>
-              </div>
+            </div>
+            )}
+
+            {/* Processing */}
+            {processing && (
+              <p className="font-mono text-alibi-cream/40 text-xs animate-pulse">
+                Processing results...
+              </p>
             )}
           </div>
 
         ) : (
           
-          <div className="flex flex-col items-center gap-6 w-full max-w-sm text-center">
+          <div className="flex flex-col items-center gap-4 w-full max-w-sm text-center py-4">
 
-            {/* Eliminated Player Card */}
             <div className={`w-full rounded-2xl border-2 overflow-hidden ${
-              isConspirator
-                ? 'border-alibi-red'
-                : 'border-alibi-gold'
+              isConspirator ? 'border-alibi-red' : 'border-alibi-gold'
             }`}>
-              {/* Image */}
               <img
                 src={isConspirator ? conspiratorsImg : citizensImg}
                 alt=""
                 className="w-full object-cover"
               />
 
-              {/* Info */}
               <div className={`p-6 ${
                 isConspirator ? 'bg-alibi-red/10' : 'bg-alibi-gold/10'
               }`}>
@@ -266,21 +364,15 @@ export default function VotingReveal(){
                     : 'An innocent citizen has been eliminated. The conspirators are still among you.'
                   }
                 </p>
-              </div>
-              {/* countdown */}
-                {revealed && !processing && countdown !== null && countdown > 0 && (
-                <p className="font-mono text-alibi-cream/40 text-xs text-center">
-                    Continuing in {countdown}...
-                </p>
-                )}
-            </div>
 
-            {/* Processing */}
-            {processing && (
-              <p className="font-mono text-alibi-cream/40 text-xs animate-pulse">
-                Processing results...
-              </p>
-            )}
+                {/* Countdown */}
+                {countdown !== null && countdown > 0 && (
+                  <p className="font-mono text-alibi-cream/40 text-xs mt-4">
+                    Continuing in {countdown}...
+                  </p>
+                )}
+              </div>
+            </div>
 
           </div>
         )}

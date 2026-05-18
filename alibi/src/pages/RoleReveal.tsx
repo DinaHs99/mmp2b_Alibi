@@ -21,6 +21,8 @@ export default function RoleReveal() {
   const [player, setPlayer]   = useState<Player | null>(null)
   const [loading, setLoading] = useState(true)
   const [revealed, setRevealed] = useState(false)
+  const [scenario, setScenario] = useState<any>(null)
+  const [showScenario, setShowScenario] = useState(true)
 
   useEffect(() => {
     fetchMyPlayer()
@@ -46,6 +48,14 @@ export default function RoleReveal() {
       navigate('/')
       return
     }
+
+    const { data: scenarioData } = await supabase
+      .from('scenarios')
+      .select('*')
+      .eq('id', room.scenario_id)
+      .single()
+
+    setScenario(scenarioData)
 
     
     const { data: players } = await supabase
@@ -93,15 +103,54 @@ export default function RoleReveal() {
       <div className="relative z-10 flex justify-between items-center px-8 py-6">
         <img src={logo} alt="Alibi" className="w-16" />
         <span className="font-heading text-alibi-gold text-sm uppercase tracking-widest">
-          Role Reveal
+          {showScenario ? 'Case Briefing' : 'Role Reveal'}
         </span>
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-8 pb-8">
 
-        {!revealed ? (
-          
+        {showScenario ? (
+          <div className="flex flex-col items-center gap-6 w-full max-w-md text-center">
+
+            <div className="w-full rounded-2xl border-2 border-alibi-gold bg-alibi-gold/10 p-8">
+              <p className="font-mono text-alibi-gold text-[9px] uppercase tracking-widest mb-3">
+                Tonight's Case
+              </p>
+
+              <h1 className="font-heading text-alibi-cream text-3xl uppercase tracking-widest mb-6">
+                {scenario?.title}
+              </h1>
+
+              <p className="font-body text-alibi-cream/80 text-sm leading-relaxed italic">
+                "{scenario?.description}"
+              </p>
+
+              <div className="border-t border-alibi-gold/20 mt-6 pt-4">
+                <p className="font-body text-alibi-cream/50 text-xs italic">
+                  Read the case carefully. Everyone knows this part.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowScenario(false)}
+              className="font-heading text-alibi-black font-bold hover:opacity-90 transition"
+              style={{
+                display: 'inline-flex',
+                padding: '19px 47px 18px 49px',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: '20px',
+                background: '#F9A856',
+              }}
+            >
+              CONTINUE
+            </button>
+
+          </div>
+        ) : !revealed ? (
+
           <div className="flex flex-col items-center gap-8">
             <p className="font-body text-alibi-cream/70 text-sm italic text-center max-w-sm">
               Your role has been assigned. Make sure nobody is watching your screen before you reveal it.
@@ -133,15 +182,14 @@ export default function RoleReveal() {
                 : 'border-alibi-gold bg-alibi-gold/10'
             }`}>
 
-                {/* Role Image */}
-
-                <div className="w-full mb-6 rounded-xl overflow-hidden">
+              {/* Role Image */}
+              <div className="w-full mb-6 rounded-xl overflow-hidden">
                 <img
-                    src={isConspirator ? conspiratorimg : citizenimg}
-                    alt={isConspirator ? 'Conspirator' : 'Citizen'}
-                    className="w-full object-cover"
+                  src={isConspirator ? conspiratorimg : citizenimg}
+                  alt={isConspirator ? 'Conspirator' : 'Citizen'}
+                  className="w-full object-cover"
                 />
-                </div>
+              </div>
 
               {/* Team */}
               <p className={`font-mono text-xs uppercase tracking-widest mb-2 ${
@@ -186,10 +234,8 @@ export default function RoleReveal() {
                   </p>
                 </>
               )}
-
             </div>
 
-            
             <button
               onClick={() => navigate(`/room/${code}/discussion`)}
               className="font-heading text-alibi-black font-bold hover:opacity-90 transition"
@@ -208,7 +254,7 @@ export default function RoleReveal() {
             <p className="font-body text-alibi-cream/30 text-xs italic">
               Remember your role. Tell no one.
             </p>
-
+            
           </div>
         )}
 

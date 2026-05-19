@@ -21,6 +21,7 @@ export default function Voting() {
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [hasVoted, setHasVoted] = useState(false)
     const [votes, setVotes] = useState<any[]>([])
+    const [isEliminated, setIsEliminated] = useState(false)
     const [totalPlayerCount, setTotalPlayerCount] = useState(0) // ✅ just a number
 
     const sessionId  = sessionStorage.getItem('alibi_session_id')
@@ -55,6 +56,15 @@ export default function Voting() {
 
         if (!foundRoom) { navigate('/'); return }
         setRoom(foundRoom)
+
+        const { data: myPlayer } = await supabase
+            .from('players')
+            .select('status')
+            .eq('room_id', foundRoom.id)
+            .eq('session_id', sessionId)
+            .single()
+
+        setIsEliminated(myPlayer?.status === 'eliminated')
 
         // Get alive players
         const { data: playersData } = await supabase
@@ -120,7 +130,7 @@ export default function Voting() {
     }
 
     const handleVote = async () => {
-        if (!selectedId || !room || hasVoted) return
+        if (!selectedId || !room || hasVoted || isEliminated) return
 
         const { error } = await supabase
             .from('votes')
@@ -155,6 +165,32 @@ export default function Voting() {
                 <p className="font-heading text-alibi-gold text-xl animate-pulse">
                     Loading...
                 </p>
+            </div>
+        )
+    }
+
+    if (isEliminated) {
+        return (
+            <div
+                className="relative min-h-screen flex flex-col items-center justify-center text-center px-8"
+                style={{
+                    backgroundImage: `url(${bg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                }}
+            >
+                <div className="absolute inset-0 bg-black/60" />
+                <div className="relative z-10 max-w-sm rounded-2xl border border-alibi-red/40 bg-alibi-red/10 p-8">
+                    <p className="font-mono text-alibi-red text-[9px] uppercase tracking-widest mb-3">
+                        Eliminated
+                    </p>
+                    <h2 className="font-heading text-alibi-cream text-3xl uppercase tracking-widest mb-4">
+                        You Are Out
+                    </h2>
+                    <p className="font-body text-alibi-cream/60 text-sm italic leading-relaxed">
+                        You can no longer vote. Wait for the remaining players to finish the round.
+                    </p>
+                </div>
             </div>
         )
     }

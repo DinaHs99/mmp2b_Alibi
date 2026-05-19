@@ -37,6 +37,7 @@ export default function Discussion() {
   const [iAmReady, setIAmReady]       = useState(false)
   const [privateClue, setPrivateClue] = useState('')
   const [showClue, setShowClue]       = useState(false)
+  const [isEliminated, setIsEliminated] = useState(false)
   const chatEndRef                    = useRef<HTMLDivElement>(null)
   const timerRef                      = useRef<any>(null)
   const roomRef                       = useRef<any>(null)
@@ -88,6 +89,15 @@ export default function Discussion() {
 
     setRoom(foundRoom)
     roomRef.current = foundRoom
+
+    const { data: myPlayer } = await supabase
+      .from('players')
+      .select('status')
+      .eq('room_id', foundRoom.id)
+      .eq('session_id', sessionId)
+      .single()
+
+    setIsEliminated(myPlayer?.status === 'eliminated')
 
     // Get scenario evidence
     const { data: scenario } = await supabase
@@ -222,7 +232,7 @@ export default function Discussion() {
   }
 
   const sendMessage = async () => {
-    if (!input.trim() || !room) return
+    if (!input.trim() || !room || isEliminated) return
     const { error } = await supabase
       .from('messages')
       .insert({
@@ -254,6 +264,32 @@ export default function Discussion() {
         <p className="relative z-10 font-heading text-alibi-gold text-xl animate-pulse">
           Loading...
         </p>
+      </div>
+    )
+  }
+
+  if (isEliminated) {
+    return (
+      <div
+        className="relative min-h-screen flex flex-col items-center justify-center text-center px-8"
+        style={{
+          backgroundImage: `url(${bg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 max-w-sm rounded-2xl border border-alibi-red/40 bg-alibi-red/10 p-8">
+          <p className="font-mono text-alibi-red text-[9px] uppercase tracking-widest mb-3">
+            Eliminated
+          </p>
+          <h2 className="font-heading text-alibi-cream text-3xl uppercase tracking-widest mb-4">
+            You Are Out
+          </h2>
+          <p className="font-body text-alibi-cream/60 text-sm italic leading-relaxed">
+            You have been eliminated. Wait for the remaining players to finish the investigation.
+          </p>
+        </div>
       </div>
     )
   }

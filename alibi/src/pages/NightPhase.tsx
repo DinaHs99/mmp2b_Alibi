@@ -4,17 +4,48 @@ import { supabase } from '../lib/supabase'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 
+interface Player {
+  id: string
+  fake_name: string
+  role: string
+  status: string
+  session_id: string
+  is_host: boolean
+}
+
+interface NightAction {
+  id: string
+  room_id: string
+  round: number
+  actor_id: string
+  target_id: string | null
+  action_type: string
+}
+
 export default function NightPhase() {
   const { code } = useParams()
   const navigate = useNavigate()
   const [room, setRoom] = useState<any>(null)
+  const [players, setPlayers] = useState<Player[]>([])
+  const [myPlayer, setMyPlayer] = useState<Player | null>(null)
+  const [nightActions, setNightActions] = useState<NightAction[]>([])
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [isEliminated, setIsEliminated] = useState(false)
-  const [hostAlive, setHostAlive] = useState(true)
   const [canAutoAdvance, setCanAutoAdvance] = useState(false)
+  const [submittingAction, setSubmittingAction] = useState(false)
 
   const isHost = sessionStorage.getItem('alibi_is_host') === 'true'
+  const sessionId = sessionStorage.getItem('alibi_session_id')
+  const alivePlayers = players.filter(player => player.status === 'alive')
+  const requiredActors = alivePlayers.filter(player => player.role === 'conspirator')
+  const completedActorIds = new Set(nightActions.map(action => action.actor_id))
+  const hasSubmittedAction = myPlayer ? completedActorIds.has(myPlayer.id) : false
+  const allRequiredActionsComplete =
+    requiredActors.length === 0 ||
+    requiredActors.every(player => completedActorIds.has(player.id))
+  const requiredDoneCount = requiredActors.filter(player => completedActorIds.has(player.id)).length
+  const isConspirator = myPlayer?.role === 'conspirator'
 
   useEffect(() => {
     if (!code) return
@@ -41,17 +72,26 @@ export default function NightPhase() {
         .eq('room_id', foundRoom.id)
 
       const alivePlayers = players?.filter(player => player.status === 'alive') || []
-      const myPlayer = players?.find(player => player.session_id === sessionStorage.getItem('alibi_session_id'))
+      const currentPlayer = players?.find(player => player.session_id === sessionId) || null
       const nextHostAlive = alivePlayers.some(player => player.is_host)
       const firstAlivePlayer = alivePlayers[0]
 
-      setIsEliminated(myPlayer?.status === 'eliminated')
-      setHostAlive(nextHostAlive)
+      setPlayers(players || [])
+      setMyPlayer(currentPlayer)
+      setIsEliminated(currentPlayer?.status === 'eliminated')
       setCanAutoAdvance(
-        myPlayer?.status === 'alive' &&
+        currentPlayer?.status === 'alive' &&
         !nextHostAlive &&
-        firstAlivePlayer?.session_id === myPlayer.session_id
+        firstAlivePlayer?.session_id === currentPlayer.session_id
       )
+
+      const { data: actions } = await supabase
+        .from('night_actions')
+        .select('*')
+        .eq('room_id', foundRoom.id)
+        .eq('round', foundRoom.round)
+
+      setNightActions(actions || [])
 
       setLoading(false)
 
@@ -72,6 +112,24 @@ export default function NightPhase() {
           }
         })
         .subscribe()
+
+      supabase
+        .channel(`night-actions-${foundRoom.id}-${foundRoom.round}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'night_actions',
+          filter: `room_id=eq.${foundRoom.id}`
+        }, async () => {
+          const { data: latestActions } = await supabase
+            .from('night_actions')
+            .select('*')
+            .eq('room_id', foundRoom.id)
+            .eq('round', foundRoom.round)
+
+          setNightActions(latestActions || [])
+        })
+        .subscribe()
     }
 
     init()
@@ -84,17 +142,18 @@ export default function NightPhase() {
   }, [code])
 
   useEffect(() => {
-    if (!room || !canAutoAdvance || hostAlive || processing) return
+    if (!room || !allRequiredActionsComplete || processing) return
+    if (!isHost && !canAutoAdvance) return
 
     const timeout = setTimeout(() => {
       startNextDay()
     }, 3000)
 
     return () => clearTimeout(timeout)
-  }, [room, canAutoAdvance, hostAlive, processing])
+  }, [room, canAutoAdvance, processing, nightActions])
 
   const startNextDay = async () => {
-    if (!room || (!isHost && !canAutoAdvance)) return
+    if (!room || !allRequiredActionsComplete || (!isHost && !canAutoAdvance)) return
     setProcessing(true)
 
     const { error } = await supabase
@@ -109,6 +168,32 @@ export default function NightPhase() {
     }
 
     navigate(`/room/${code}/discussion`)
+  }
+
+  const submitNightAction = async () => {
+    if (!room || !myPlayer || submittingAction || hasSubmittedAction) return
+    setSubmittingAction(true)
+
+    const { data, error } = await supabase
+      .from('night_actions')
+      .insert({
+        room_id: room.id,
+        round: room.round,
+        actor_id: myPlayer.id,
+        target_id: null,
+        action_type: 'conspirator_ready',
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Failed to submit night action:', error)
+      setSubmittingAction(false)
+      return
+    }
+
+    setNightActions(prev => [...prev, data as NightAction])
+    setSubmittingAction(false)
   }
 
   if (loading) {
@@ -178,14 +263,23 @@ export default function NightPhase() {
             Night Falls
           </h1>
 
-          <p className="font-body text-alibi-cream/70 text-sm italic leading-relaxed mb-8">
-            The room goes quiet. The remaining players prepare for the next day, where new evidence will be revealed.
+          <p className="font-body text-alibi-cream/70 text-sm italic leading-relaxed mb-6">
+            The room goes quiet. Each team completes its night action before the next day begins.
           </p>
 
-          {isHost && !isEliminated ? (
+          <div className="border border-alibi-cream/10 bg-black/30 rounded-xl px-4 py-3 mb-6">
+            <p className="font-mono text-alibi-cream/40 text-[9px] uppercase tracking-widest mb-1">
+              Night Actions
+            </p>
+            <p className="font-body text-alibi-cream/70 text-sm">
+              {requiredDoneCount} / {requiredActors.length} required actions complete
+            </p>
+          </div>
+
+          {isConspirator && !hasSubmittedAction && (
             <button
-              onClick={startNextDay}
-              disabled={processing}
+              onClick={submitNightAction}
+              disabled={submittingAction}
               className="font-heading text-alibi-black font-bold hover:opacity-90 transition disabled:opacity-40"
               style={{
                 display: 'inline-flex',
@@ -196,13 +290,25 @@ export default function NightPhase() {
                 background: '#F9A856',
               }}
             >
-              {processing ? 'STARTING...' : 'START NEXT DAY'}
+              {submittingAction ? 'SUBMITTING...' : 'COMPLETE NIGHT ACTION'}
             </button>
-          ) : (
+          )}
+
+          {isConspirator && hasSubmittedAction && (
             <p className="font-body text-alibi-cream/40 text-sm italic">
-              {hostAlive
-                ? 'Waiting for the host to start the next day...'
-                : 'The next day will begin automatically...'}
+              Your night action is complete. Waiting for the night to end...
+            </p>
+          )}
+
+          {!isConspirator && (
+            <p className="font-body text-alibi-cream/40 text-sm italic">
+              You have no action tonight. Wait for the night to end...
+            </p>
+          )}
+
+          {allRequiredActionsComplete && (
+            <p className="font-mono text-alibi-gold text-[10px] uppercase tracking-widest mt-6 animate-pulse">
+              {processing ? 'Starting next day...' : 'All actions complete. Dawn is coming...'}
             </p>
           )}
         </div>

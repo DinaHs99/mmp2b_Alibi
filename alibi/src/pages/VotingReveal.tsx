@@ -20,6 +20,7 @@ export default function VotingReveal() {
   const [tiedPlayers, setTiedPlayers] = useState<any[]>([])
   const [isTied, setIsTied] = useState(false)
   const [countdown, setCountdown] = useState<number | null>(null)
+  const [canControlRoom, setCanControlRoom] = useState(false)
 
   const isHost = sessionStorage.getItem('alibi_is_host') === 'true'
 
@@ -61,6 +62,16 @@ export default function VotingReveal() {
 
     if (!playersData) return
 
+    const alivePlayers     = playersData.filter(p => p.status === 'alive')
+    const myPlayer = playersData.find(p => p.session_id === sessionStorage.getItem('alibi_session_id'))
+    const hostAlive = alivePlayers.some(p => p.is_host)
+    const firstAlivePlayer = alivePlayers[0]
+
+    setCanControlRoom(
+      myPlayer?.status === 'alive' &&
+      (isHost || (!hostAlive && firstAlivePlayer?.session_id === myPlayer.session_id))
+    )
+
     const { data: votesData } = await supabase
       .from('votes')
       .select('*')
@@ -69,7 +80,6 @@ export default function VotingReveal() {
 
     if (!votesData) return
 
-    const alivePlayers     = playersData.filter(p => p.status === 'alive')
     const eliminatedPlayer = getEliminatedPlayer(votesData, alivePlayers)
 
     if (!eliminatedPlayer && votesData.length >0) {
@@ -105,6 +115,9 @@ export default function VotingReveal() {
         if (payload.new.phase === 'discussion') {
           navigate(`/room/${code}/discussion`)
         }
+        if (payload.new.phase === 'night') {
+          navigate(`/room/${code}/night`)
+        }
         if (payload.new.phase === 'gameover') {
           navigate(`/room/${code}/gameover`)
         }
@@ -113,7 +126,7 @@ export default function VotingReveal() {
   }
 
     const handleReveal = async () => {
-        if (!isHost || !room) return
+        if (!canControlRoom || !room) return
         setProcessing(true)
 
         
@@ -180,7 +193,7 @@ export default function VotingReveal() {
             await supabase
             .from('rooms')
             .update({
-                phase: 'discussion',
+                phase: 'night',
                 round: room.round + 1,
                 revealed: false,
                 tie_player_ids: null, 
@@ -194,6 +207,17 @@ export default function VotingReveal() {
             .neq('status', 'eliminated')
         }
     }
+
+    useEffect(() => {
+        if (loading || revealed || processing || isHost || !canControlRoom) return
+
+        const timeout = setTimeout(() => {
+            handleReveal()
+        }, 1000)
+
+        return () => clearTimeout(timeout)
+    }, [loading, revealed, processing, isHost, canControlRoom])
+
     const startCountdown = () => {
         let count = 5
         setCountdown(count)
@@ -283,7 +307,7 @@ export default function VotingReveal() {
             )}
 
             {/* Host button */}
-            {isHost && !processing && (
+            {isHost && canControlRoom && !processing && (
             <button
                 onClick={handleReveal}
                 className="font-heading text-alibi-black font-bold hover:opacity-90 transition"
@@ -300,7 +324,7 @@ export default function VotingReveal() {
             </button>
             )}
 
-            {!isHost && (
+            {(!isHost || !canControlRoom) && (
             <div className="flex flex-col items-center gap-2">
                 <div className="flex gap-1">
                 <span className="w-2 h-2 rounded-full bg-alibi-gold animate-bounce"
@@ -311,7 +335,13 @@ export default function VotingReveal() {
                     style={{ animationDelay: '300ms' }} />
                 </div>
                 <p className="font-body text-alibi-cream/40 text-sm italic">
-                {isTied? 'Tie detected. Waiting for host...' : 'Waiting for host to reveal...'}
+                {canControlRoom
+                  ? isTied
+                    ? 'Tie detected. Starting revote automatically...'
+                    : 'Revealing automatically...'
+                  : isTied
+                    ? 'Tie detected. Waiting...'
+                    : 'Waiting for host to reveal...'}
                 </p>
             </div>
             )}

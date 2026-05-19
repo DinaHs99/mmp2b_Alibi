@@ -10,6 +10,7 @@ interface Player {
     occupation: string
     status: string
     session_id: string
+    is_host: boolean
 }
 
 export default function Voting() {
@@ -22,6 +23,8 @@ export default function Voting() {
     const [hasVoted, setHasVoted] = useState(false)
     const [votes, setVotes] = useState<any[]>([])
     const [isEliminated, setIsEliminated] = useState(false)
+    const [canControlRoom, setCanControlRoom] = useState(false)
+    const [autoRevealing, setAutoRevealing] = useState(false)
     const [totalPlayerCount, setTotalPlayerCount] = useState(0) // ✅ just a number
 
     const sessionId  = sessionStorage.getItem('alibi_session_id')
@@ -75,6 +78,13 @@ export default function Voting() {
 
         if (playersData) {
             setTotalPlayerCount(playersData.length)
+            const hostAlive = playersData.some(p => p.is_host)
+            const firstAlivePlayer = playersData[0]
+
+            setCanControlRoom(
+                myPlayer?.status === 'alive' &&
+                (isHost || (!hostAlive && firstAlivePlayer?.session_id === sessionId))
+            )
 
             if (foundRoom.tie_player_ids && foundRoom.tie_player_ids.length > 0) {
                 const tiedOnly = playersData.filter(p =>
@@ -146,7 +156,8 @@ export default function Voting() {
     }
 
     const handleReveal = async () => {
-        if (!room) return
+        if (!room || !canControlRoom || autoRevealing) return
+        setAutoRevealing(true)
         await supabase
             .from('rooms')
             .update({ phase: 'reveal' })
@@ -155,6 +166,11 @@ export default function Voting() {
 
     const allVoted  = votes.length >= totalPlayerCount
     const voteCount = (playerId: string) => votes.filter(v => v.target_id === playerId).length
+
+    useEffect(() => {
+        if (!allVoted || !canControlRoom || isHost || autoRevealing) return
+        handleReveal()
+    }, [allVoted, canControlRoom, isHost, autoRevealing])
 
     if (loading) {
         return (

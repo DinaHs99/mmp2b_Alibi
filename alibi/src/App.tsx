@@ -10,6 +10,7 @@ import Discussion from './pages/Discussion.tsx'
 import Voting from './pages/Voting.tsx'
 import VotingReveal from './pages/VotingReveal.tsx'
 import GameOver from './pages/GameOver.tsx'
+import NightPhase from './pages/NightPhase.tsx'
 
 import JoinCode from './pages/join/JoinCode.tsx'
 import JoinName from './pages/join/JoinName.tsx'
@@ -28,6 +29,7 @@ function App() {
         <Route path="/room/:code/discussion"       element={<Discussion />} />
         <Route path="/room/:code/voting"           element={<Voting />} />
         <Route path="/room/:code/voting-reveal"    element={<VotingReveal />} />
+        <Route path="/room/:code/night"            element={<NightPhase />} />
         <Route path="/room/:code/gameover"        element={<GameOver />} />
         
         <Route path="/join/name"  element={<JoinName />} />

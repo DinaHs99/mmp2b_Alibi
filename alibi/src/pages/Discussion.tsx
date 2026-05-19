@@ -19,6 +19,7 @@ interface Player {
   status: string
   session_id: string
   is_ready: boolean
+  is_host: boolean
 }
 
 const DISCUSSION_TIME = 180
@@ -41,6 +42,7 @@ export default function Discussion() {
   const chatEndRef                    = useRef<HTMLDivElement>(null)
   const timerRef                      = useRef<any>(null)
   const roomRef                       = useRef<any>(null)
+  const canControlRoomRef             = useRef(false)
 
   const sessionId  = sessionStorage.getItem('alibi_session_id')
   const playerName = sessionStorage.getItem('alibi_player_name')
@@ -121,6 +123,13 @@ export default function Discussion() {
 
     if (playersData) {
       setPlayers(playersData)
+      const hostAlive = playersData.some(p => p.is_host)
+      const firstAlivePlayer = playersData[0]
+      const nextCanControlRoom =
+        myPlayer?.status === 'alive' &&
+        (isHost || (!hostAlive && firstAlivePlayer?.session_id === sessionId))
+
+      canControlRoomRef.current = nextCanControlRoom
 
       
       const me = playersData.find(p => p.session_id === sessionId)
@@ -195,7 +204,7 @@ export default function Discussion() {
         if (prev <= 1) {
             clearInterval(timerRef.current)
             
-            if (sessionStorage.getItem('alibi_is_host') === 'true') {
+            if (canControlRoomRef.current) {
             moveToVoting(roomRef.current.id)
             }
             return 0

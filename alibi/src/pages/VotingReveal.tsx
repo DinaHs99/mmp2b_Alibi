@@ -7,6 +7,8 @@ import logo from '../assets/logo1.png'
 import conspiratorsImg from '../assets/conspirator.png'
 import citizensImg from '../assets/citizen.png'
 
+const MAX_ROUNDS = 3
+
 export default function VotingReveal() {
   const { code } = useParams()
   const navigate = useNavigate()
@@ -169,7 +171,7 @@ export default function VotingReveal() {
 
         await new Promise(resolve => setTimeout(resolve, 5000))
 
-        if (result) {
+        if (result || room.round >= MAX_ROUNDS) {
             await supabase
             .from('rooms')
             .update({ phase: 'gameover' })

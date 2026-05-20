@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home.tsx'
 import Room from './pages/Room.tsx'
@@ -11,11 +12,25 @@ import Voting from './pages/Voting.tsx'
 import VotingReveal from './pages/VotingReveal.tsx'
 import GameOver from './pages/GameOver.tsx'
 import NightPhase from './pages/NightPhase.tsx'
+import { playSound } from './utils/sound'
 
 import JoinCode from './pages/join/JoinCode.tsx'
 import JoinName from './pages/join/JoinName.tsx'
 
 function App() {
+  useEffect(() => {
+    const handleButtonClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null
+      const button = target?.closest('button') as HTMLButtonElement | null
+
+      if (!button || button.disabled) return
+
+      playSound('ui')
+    }
+
+    document.addEventListener('click', handleButtonClick)
+    return () => document.removeEventListener('click', handleButtonClick)
+  }, [])
   return (
     <BrowserRouter>
       <Routes>

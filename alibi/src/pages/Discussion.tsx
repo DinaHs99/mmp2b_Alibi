@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
+import { playSound } from '../utils/sound'
 
 interface Message {
   id: string
@@ -201,7 +202,10 @@ export default function Discussion() {
     const startTimer = () => {
     timerRef.current = setInterval(() => {
         setTimeLeft(prev => {
-        if (prev <= 1) {
+            if(prev === 15) {
+              playSound('timer')
+            }
+            if (prev <= 1) {
             clearInterval(timerRef.current)
             
             if (canControlRoomRef.current) {

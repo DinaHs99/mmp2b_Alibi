@@ -5,6 +5,7 @@ import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import conspiratorimg from '../assets/conspirator.png'
 import citizenimg from '../assets/citizen.png'
+import { playSound } from '../utils/sound'
 
 interface Player {
   id: string
@@ -26,6 +27,7 @@ export default function RoleReveal() {
 
   useEffect(() => {
     fetchMyPlayer()
+    playSound('openRole')
   }, [code])
 
   const fetchMyPlayer = async () => {
@@ -56,7 +58,7 @@ export default function RoleReveal() {
       .single()
 
     setScenario(scenarioData)
-
+    playSound('caseBriefing')
     
     const { data: players } = await supabase
       .from('players')
@@ -81,7 +83,7 @@ export default function RoleReveal() {
       >
         <div className="absolute inset-0 bg-black/60" />
         <p className="relative z-10 font-heading text-alibi-gold text-xl animate-pulse">
-          Loading your role...
+          Loading the case...
         </p>
       </div>
     )

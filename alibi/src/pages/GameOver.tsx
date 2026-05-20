@@ -5,6 +5,7 @@ import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import conspiratorsImg from '../assets/conspirator.png'
 import citizensImg from '../assets/citizen.png'
+import { playSound } from '../utils/sound'
 
 export default function GameOver() {
   const { code } = useParams()
@@ -17,6 +18,14 @@ export default function GameOver() {
     if (!code) return
     init()
   }, [code])
+
+  useEffect(() => {
+    if (!winner) return
+
+    playSound('gameOver')
+    if (winner === 'citizens') playSound('citizensWin')
+    if (winner === 'conspirators') playSound('conspiratorsWin')
+  }, [winner])
 
   const init = async () => {
     const { data: allRooms } = await supabase

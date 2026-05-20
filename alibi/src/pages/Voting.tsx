@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import bg from "../assets/hero-texture.png";
 import logo from "../assets/logo1.png";
+import { playSound } from '../utils/sound';
 
 interface Player {
     id: string
@@ -67,7 +68,9 @@ export default function Voting() {
             .eq('session_id', sessionId)
             .single()
 
-        setIsEliminated(myPlayer?.status === 'eliminated')
+        const playerIsEliminated = myPlayer?.status === 'eliminated'
+        setIsEliminated(playerIsEliminated)
+        if (playerIsEliminated) playSound('eliminated')
 
         // Get alive players
         const { data: playersData } = await supabase
@@ -131,6 +134,7 @@ export default function Voting() {
                 filter: `id=eq.${foundRoom.id}`
             }, (payload) => {
                 if (payload.new.phase === 'reveal') {
+                    playSound('openRole')
                     navigate(`/room/${foundRoom.code}/voting-reveal`)
                 }
             })

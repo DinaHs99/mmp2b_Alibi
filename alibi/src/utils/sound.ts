@@ -10,15 +10,17 @@ export type SoundKey =
 
 const SOUND_MUTED_KEY = 'alibi_sound_muted'
 
+const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`
+
 const SOUND_PATHS: Record<SoundKey, string> = {
-  caseBriefing: '/audio/case-briefing.mp3',
-  citizensWin: '/audio/citizens-win.mp3',
-  conspiratorsWin: '/audio/conspi-win.mp3',
-  eliminated: '/audio/eliminated.mp3',
-  gameOver: '/audio/game-over.mp3',
-  openRole: '/audio/open-role.mp3',
-  timer: '/audio/timer.mp3',
-  ui: '/audio/ui.mp3',
+  caseBriefing: publicAsset('audio/case-briefing.mp3'),
+  citizensWin: publicAsset('audio/citizens-win.mp3'),
+  conspiratorsWin: publicAsset('audio/conspi-win.mp3'),
+  eliminated: publicAsset('audio/eliminated.mp3'),
+  gameOver: publicAsset('audio/game-over.mp3'),
+  openRole: publicAsset('audio/open-role.mp3'),
+  timer: publicAsset('audio/timer.mp3'),
+  ui: publicAsset('audio/ui.mp3'),
 }
 
 const DEFAULT_VOLUME: Record<SoundKey, number> = {

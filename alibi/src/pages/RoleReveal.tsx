@@ -7,12 +7,14 @@ import conspiratorimg from '../assets/conspirator.png'
 import citizenimg from '../assets/citizen.png'
 import { playLoopingSound, playSound, stopSound } from '../utils/sound'
 
+const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`
+
 const SCENARIO_VIDEOS: Record<string, string> = {
-  '9facef33-21ba-4710-acd1-8674d59da978': '/video/case1.mp4',
-  '1e6bee59-fbaa-4c77-93b2-2462dee27319': '/video/case2.mp4',
-  '99df3dd6-a517-4ae5-a28f-233ceb466652': '/video/case3.mp4',
-  '73436bb5-6c55-429a-8af3-fe74879438b2': '/video/case4.mp4',
-  '14ddb747-a8f7-4f5a-9d68-cbff14242588': '/video/case5.mp4',
+  '9facef33-21ba-4710-acd1-8674d59da978': publicAsset('video/case1.mp4'),
+  '1e6bee59-fbaa-4c77-93b2-2462dee27319': publicAsset('video/case2.mp4'),
+  '99df3dd6-a517-4ae5-a28f-233ceb466652': publicAsset('video/case3.mp4'),
+  '73436bb5-6c55-429a-8af3-fe74879438b2': publicAsset('video/case4.mp4'),
+  '14ddb747-a8f7-4f5a-9d68-cbff14242588': publicAsset('video/case5.mp4'),
 }
 
 interface Player {

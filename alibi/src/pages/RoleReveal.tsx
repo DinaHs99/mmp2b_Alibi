@@ -5,7 +5,15 @@ import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import conspiratorimg from '../assets/conspirator.png'
 import citizenimg from '../assets/citizen.png'
-import { playSound } from '../utils/sound'
+import { playLoopingSound, playSound, stopSound } from '../utils/sound'
+
+const SCENARIO_VIDEOS: Record<string, string> = {
+  '9facef33-21ba-4710-acd1-8674d59da978': '/video/case1.mp4',
+  '1e6bee59-fbaa-4c77-93b2-2462dee27319': '/video/case2.mp4',
+  '99df3dd6-a517-4ae5-a28f-233ceb466652': '/video/case3.mp4',
+  '73436bb5-6c55-429a-8af3-fe74879438b2': '/video/case4.mp4',
+  '14ddb747-a8f7-4f5a-9d68-cbff14242588': '/video/case5.mp4',
+}
 
 interface Player {
   id: string
@@ -58,7 +66,6 @@ export default function RoleReveal() {
       .single()
 
     setScenario(scenarioData)
-    playSound('caseBriefing')
     
     const { data: players } = await supabase
       .from('players')
@@ -73,7 +80,18 @@ export default function RoleReveal() {
     setLoading(false)
   }
 
+  useEffect(() => {
+    if (!showScenario || !scenario) {
+      stopSound('caseBriefing')
+      return
+    }
+
+    playLoopingSound('caseBriefing')
+    return () => stopSound('caseBriefing')
+  }, [showScenario, scenario])
+
   const isConspirator = player?.role === 'conspirator'
+  const scenarioVideo = scenario?.id ? SCENARIO_VIDEOS[scenario.id] : null
 
   if (loading) {
     return (
@@ -110,12 +128,26 @@ export default function RoleReveal() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-8 pb-8">
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 overflow-y-auto px-8 py-4 pb-8">
 
         {showScenario ? (
           <div className="flex flex-col items-center gap-6 w-full max-w-md text-center">
 
             <div className="w-full rounded-2xl border-2 border-alibi-gold bg-alibi-gold/10 p-8">
+              {scenarioVideo && (
+                <div className="w-full mb-6 overflow-hidden rounded-xl border border-alibi-gold/20 bg-black/40">
+                  <video
+                    src={scenarioVideo}
+                    className="aspect-video w-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                  />
+                </div>
+              )}
+
               <p className="font-mono text-alibi-gold text-[9px] uppercase tracking-widest mb-3">
                 Tonight's Case
               </p>
@@ -136,7 +168,10 @@ export default function RoleReveal() {
             </div>
 
             <button
-              onClick={() => setShowScenario(false)}
+              onClick={() => {
+                stopSound('caseBriefing')
+                setShowScenario(false)
+              }}
               className="font-heading text-alibi-black font-bold hover:opacity-90 transition"
               style={{
                 display: 'inline-flex',

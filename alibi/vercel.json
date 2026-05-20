@@ -5,6 +5,22 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/audio/(.*)",
+      "dest": "/audio/$1"
+    },
+    {
+      "src": "/video/(.*)",
+      "dest": "/video/$1"
+    },
+    {
+      "src": "/favicon.svg",
+      "dest": "/favicon.svg"
+    },
+    {
+      "src": "/icons.svg",
+      "dest": "/icons.svg"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }

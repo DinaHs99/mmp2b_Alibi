@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { checkWinCondition } from '../lib/checkWin'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
+import PlayerAvatar from '../components/ui/PlayerAvatar'
 
 interface Player {
   id: string
@@ -489,7 +490,7 @@ export default function NightPhase() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {aliveCitizens.map(player => (
                   <button
                     key={player.id}
@@ -497,18 +498,21 @@ export default function NightPhase() {
                       console.log('Night kill target selected', player)
                       setSelectedTargetId(player.id)
                     }}
-                    className={`rounded-xl border px-4 py-3 transition text-left ${
+                    className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition text-left ${
                       selectedTargetId === player.id
                         ? 'border-alibi-red bg-alibi-red/20'
                         : 'border-alibi-cream/20 bg-black/30 hover:border-alibi-red/50'
                     }`}
                   >
-                    <p className="font-heading text-alibi-cream text-xs uppercase tracking-wide">
-                      {player.fake_name}
-                    </p>
-                    <p className="font-mono text-alibi-cream/40 text-[9px] mt-1">
-                      Citizen
-                    </p>
+                    <PlayerAvatar className="h-16 w-16" />
+                    <div className="min-w-0">
+                      <p className="font-heading text-alibi-cream text-xs uppercase tracking-wide leading-tight break-words">
+                        {player.fake_name}
+                      </p>
+                      <p className="font-mono text-alibi-cream/40 text-[9px] mt-1 uppercase tracking-widest">
+                        Citizen
+                      </p>
+                    </div>
                   </button>
                 ))}
               </div>

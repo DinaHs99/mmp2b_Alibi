@@ -6,6 +6,7 @@ import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import conspiratorsImg from '../assets/conspirator.png'
 import citizensImg from '../assets/citizen.png'
+import PlayerAvatar from '../components/ui/PlayerAvatar'
 
 const MAX_ROUNDS = 3
 
@@ -279,18 +280,21 @@ export default function VotingReveal() {
                 The room is split between these suspects. Take another look and vote again.
                 </p>
                 {/* Show tied players */}
-                <div className="flex gap-3">
+                <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
                 {tiedPlayers.map(player => (
                     <div
                     key={player.id}
-                    className="border border-alibi-red/50 bg-alibi-red/10 rounded-xl px-4 py-3"
+                    className="flex items-center gap-3 border border-alibi-red/50 bg-alibi-red/10 rounded-xl px-4 py-3 text-left"
                     >
-                    <p className="font-heading text-alibi-cream text-sm uppercase">
-                        {player.fake_name}
-                    </p>
-                    <p className="font-mono text-alibi-cream/40 text-[9px]">
-                        {player.occupation}
-                    </p>
+                    <PlayerAvatar className="h-16 w-16" />
+                    <div className="min-w-0">
+                      <p className="font-heading text-alibi-cream text-sm uppercase leading-tight break-words">
+                          {player.fake_name}
+                      </p>
+                      <p className="font-mono text-alibi-cream/40 text-[9px] uppercase tracking-widest break-words">
+                          {player.occupation}
+                      </p>
+                    </div>
                     </div>
                 ))}
                 </div>
@@ -373,6 +377,7 @@ export default function VotingReveal() {
                 <p className="font-mono text-alibi-cream/50 text-[9px] uppercase tracking-widest mb-1">
                   Eliminated
                 </p>
+                <PlayerAvatar className="mx-auto mb-4 h-28 w-28" muted />
                 <h2 className="font-heading text-alibi-cream text-3xl uppercase tracking-widest mb-1">
                   {eliminated?.fake_name}
                 </h2>

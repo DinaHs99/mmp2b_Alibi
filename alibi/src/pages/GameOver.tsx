@@ -7,6 +7,7 @@ import conspiratorsImg from '../assets/conspirator.png'
 import citizensImg from '../assets/citizen.png'
 import { checkWinCondition } from '../lib/checkWin'
 import { playLoopingSound, playSound, stopSound } from '../utils/sound'
+import PlayerAvatar from '../components/ui/PlayerAvatar'
 
 export default function GameOver() {
   const { code } = useParams()
@@ -138,13 +139,14 @@ export default function GameOver() {
               {conspirators.map(player => (
                 <div
                   key={player.id}
-                  className="flex justify-between items-center border border-alibi-red/30 bg-alibi-red/5 rounded-xl px-4 py-3"
+                  className="flex items-center gap-3 border border-alibi-red/30 bg-alibi-red/5 rounded-xl px-4 py-3"
                 >
-                  <div>
-                    <p className="font-heading text-alibi-cream text-sm uppercase tracking-wide">
+                  <PlayerAvatar className="h-16 w-16" muted={player.status === 'eliminated'} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-heading text-alibi-cream text-sm uppercase tracking-wide leading-tight break-words">
                       {player.fake_name}
                     </p>
-                    <p className="font-mono text-alibi-cream/40 text-[9px]">
+                    <p className="font-mono text-alibi-cream/40 text-[9px] uppercase tracking-widest break-words">
                       {player.occupation}
                     </p>
                   </div>
@@ -169,13 +171,14 @@ export default function GameOver() {
               {citizens.map(player => (
                 <div
                   key={player.id}
-                  className="flex justify-between items-center border border-alibi-gold/20 bg-alibi-gold/5 rounded-xl px-4 py-3"
+                  className="flex items-center gap-3 border border-alibi-gold/20 bg-alibi-gold/5 rounded-xl px-4 py-3"
                 >
-                  <div>
-                    <p className="font-heading text-alibi-cream text-sm uppercase tracking-wide">
+                  <PlayerAvatar className="h-16 w-16" muted={player.status === 'eliminated'} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-heading text-alibi-cream text-sm uppercase tracking-wide leading-tight break-words">
                       {player.fake_name}
                     </p>
-                    <p className="font-mono text-alibi-cream/40 text-[9px]">
+                    <p className="font-mono text-alibi-cream/40 text-[9px] uppercase tracking-widest break-words">
                       {player.occupation}
                     </p>
                   </div>

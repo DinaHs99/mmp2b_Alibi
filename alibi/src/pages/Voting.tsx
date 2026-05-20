@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import bg from "../assets/hero-texture.png";
 import logo from "../assets/logo1.png";
 import { playSound } from '../utils/sound';
+import PlayerAvatar from '../components/ui/PlayerAvatar';
 
 interface Player {
     id: string
@@ -231,9 +232,12 @@ export default function Voting() {
                 <span className="font-mono text-alibi-cream/50 text-xs uppercase tracking-widest">
                     Round {room?.round || 1} — Voting
                 </span>
-                <span className="font-heading text-alibi-gold text-sm">
-                    👤 {playerName}
-                </span>
+                <div className="flex items-center gap-2">
+                    <PlayerAvatar className="h-10 w-10" />
+                    <span className="font-heading text-alibi-gold text-sm max-w-20 truncate">
+                        {playerName}
+                    </span>
+                </div>
             </div>
 
             {/* Title */}
@@ -254,7 +258,7 @@ export default function Voting() {
                 className="relative z-10 flex-1 overflow-y-auto px-6"
                 style={{ scrollbarWidth: 'none' }}
             >
-                <div className="grid grid-cols-2 gap-4 pb-4">
+                <div className="grid grid-cols-1 gap-3 pb-4 sm:grid-cols-2">
                     {players.map(player => {
                         const isMe       = player.session_id === sessionId
                         const isSelected = selectedId === player.id
@@ -268,7 +272,7 @@ export default function Voting() {
                                     setSelectedId(player.id)
                                 }}
                                 disabled={hasVoted || isMe}
-                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                                className={`flex min-h-24 flex-wrap items-center justify-center gap-3 p-3 rounded-2xl border-2 text-center transition-all sm:min-h-36 sm:flex-col sm:p-4 ${
                                     isMe
                                         ? 'border-alibi-cream/10 bg-black/20 opacity-40 cursor-not-allowed'
                                         : isSelected
@@ -276,11 +280,11 @@ export default function Voting() {
                                         : 'border-alibi-cream/20 bg-black/30 hover:border-alibi-cream/40'
                                 }`}
                             >
-                                <span className="text-3xl">👤</span>
-                                <p className="font-heading text-alibi-cream text-sm uppercase tracking-wide">
+                                <PlayerAvatar className="h-20 w-20 sm:h-24 sm:w-24" muted={isMe} />
+                                <p className="w-full min-w-0 font-heading text-alibi-cream text-sm uppercase tracking-wide leading-tight break-words sm:w-auto">
                                     {player.fake_name}
                                 </p>
-                                <p className="font-mono text-alibi-cream/40 text-[9px]">
+                                <p className="w-full min-w-0 font-mono text-alibi-cream/40 text-[9px] uppercase tracking-widest break-words sm:w-auto">
                                     {player.occupation}
                                 </p>
                                 {isMe && (

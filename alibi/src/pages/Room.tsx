@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import { useStartGame } from '../hooks/useStartGame'
+import PlayerAvatar from '../components/ui/PlayerAvatar'
 
 
 interface Player {
@@ -154,8 +155,9 @@ export default function Room() {
       <div className="relative z-10 flex justify-between items-center px-8 py-6">
         <img src={logo} alt="Alibi" className="w-16" />
         <div className="flex items-center gap-2">
-          <span className="font-heading text-alibi-gold text-sm">
-            👤 {playerName}
+          <PlayerAvatar className="h-11 w-11" />
+          <span className="font-heading text-alibi-gold text-sm max-w-24 truncate">
+            {playerName}
           </span>
           {isHost && (
             <span className="font-mono text-[9px] text-alibi-gold border border-alibi-gold px-2 py-0.5 rounded-full uppercase">
@@ -194,21 +196,19 @@ export default function Room() {
         </div>
 
         {/* Player Grid */}
-        <div className="grid grid-cols-4 gap-4 mb-10 w-full max-w-2xl">
+        <div className="grid grid-cols-2 gap-3 mb-10 w-full max-w-2xl sm:grid-cols-3 md:grid-cols-4 sm:gap-4">
 
           {players.map((player) => (
             <div
               key={player.id}
-              className={`flex flex-col items-center gap-2 p-4 rounded-2xl border ${
+              className={`flex min-h-36 flex-col items-center justify-between gap-2 p-3 rounded-2xl border sm:p-4 ${
                 player.session_id === sessionId
                   ? 'border-alibi-gold bg-alibi-gold/10'
                   : 'border-alibi-gold/30 bg-alibi-gold/5'
               }`}
             >
-              <div className="w-12 h-12 rounded-full bg-alibi-gold/20 flex items-center justify-center">
-                <span className="text-xl">👤</span>
-              </div>
-              <p className="font-heading text-alibi-cream text-xs uppercase tracking-wide text-center">
+              <PlayerAvatar className="h-20 w-20" />
+              <p className="min-h-8 font-heading text-alibi-cream text-xs uppercase tracking-wide text-center leading-tight break-words">
                 {player.fake_name}
               </p>
               <div className="flex flex-col items-center gap-1">
@@ -232,11 +232,9 @@ export default function Room() {
           }).map((_, i) => (
             <div
               key={`empty-${i}`}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-alibi-cream/10 bg-black/20"
+              className="flex min-h-36 flex-col items-center justify-between gap-2 p-3 rounded-2xl border border-alibi-cream/10 bg-black/20 sm:p-4"
             >
-              <div className="w-12 h-12 rounded-full bg-alibi-cream/5 flex items-center justify-center">
-                <span className="text-xl opacity-30">👤</span>
-              </div>
+              <PlayerAvatar className="h-20 w-20" muted />
               <p className="font-heading text-alibi-cream/20 text-xs uppercase tracking-wide">
                 Waiting...
               </p>

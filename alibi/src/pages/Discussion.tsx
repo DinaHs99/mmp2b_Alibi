@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import { playLoopingSound, stopSound } from '../utils/sound'
+import PlayerAvatar from '../components/ui/PlayerAvatar'
 
 interface Message {
   id: string
@@ -346,7 +347,7 @@ export default function Discussion() {
             )}
           </div>
           <span className="font-heading text-alibi-gold text-sm">
-            👤 {playerName}
+             {playerName}
           </span>
         </div>
 
@@ -393,7 +394,7 @@ export default function Discussion() {
             {alivePlayers.map(player => (
               <div
                 key={player.id}
-                className={`flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl border ${
+                className={`flex-shrink-0 flex min-w-28 flex-col items-center gap-1 px-3 py-2 rounded-xl border ${
                   player.session_id === sessionId
                     ? 'border-alibi-gold bg-alibi-gold/10'
                     : player.is_ready
@@ -401,8 +402,9 @@ export default function Discussion() {
                     : 'border-alibi-cream/10 bg-black/20'
                 }`}
               >
-                <span className="text-sm">
-                  {player.is_ready ? '✅' : '👤'}
+                <PlayerAvatar className="h-12 w-12" />
+                <span className="text-sm -mt-4 ml-9 rounded-full bg-black/70 px-1">
+                  {player.is_ready ? '✅' : '❌'}
                 </span>
                 <p className="font-heading text-alibi-cream text-[8px] uppercase tracking-wide whitespace-nowrap">
                   {player.fake_name}

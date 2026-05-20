@@ -273,10 +273,10 @@ export default function VotingReveal() {
             {isTied? (
             <>
                 <h2 className="font-heading text-alibi-gold text-3xl uppercase tracking-widest">
-                It's A Tie
+                No Clear Verdict
                 </h2>
                 <p className="font-body text-alibi-cream/60 text-sm italic max-w-sm">
-                The votes are tied between these players. A revote will begin.
+                The room is split between these suspects. Take another look and vote again.
                 </p>
                 {/* Show tied players */}
                 <div className="flex gap-3">
@@ -298,10 +298,10 @@ export default function VotingReveal() {
             ) : (
             <>
                 <h2 className="font-heading text-alibi-gold text-3xl uppercase tracking-widest">
-                The Verdict Is In
+                The Room Has Decided
                 </h2>
                 <p className="font-body text-alibi-cream/60 text-sm italic max-w-sm">
-                The votes have been counted. One player will be eliminated.
+                The votes are counted. In a moment, everyone will see who is leaving the case.
                 </p>
             </>
             )}
@@ -337,11 +337,11 @@ export default function VotingReveal() {
                 <p className="font-body text-alibi-cream/40 text-sm italic">
                 {canControlRoom
                   ? isTied
-                    ? 'Tie detected. Starting revote automatically...'
-                    : 'Revealing automatically...'
+                    ? 'Preparing the revote...'
+                    : 'Preparing the reveal...'
                   : isTied
-                    ? 'Tie detected. Waiting...'
-                    : 'Waiting for host to reveal...'}
+                    ? 'Waiting for the revote to begin...'
+                    : 'Waiting for the reveal...'}
                 </p>
             </div>
             )}
@@ -349,7 +349,7 @@ export default function VotingReveal() {
             {/* Processing */}
             {processing && (
               <p className="font-mono text-alibi-cream/40 text-xs animate-pulse">
-                Processing results...
+                Counting the final whispers...
               </p>
             )}
           </div>
@@ -392,8 +392,8 @@ export default function VotingReveal() {
 
                 <p className="font-body text-alibi-cream/50 text-xs italic mt-2">
                   {isConspirator
-                    ? 'A conspirator has been eliminated. Good work citizens.'
-                    : 'An innocent citizen has been eliminated. The conspirators are still among you.'
+                    ? 'A conspirator has been exposed. The citizens are closer to the truth.'
+                    : 'An innocent citizen is gone. The conspirators are still hiding in the room.'
                   }
                 </p>
 

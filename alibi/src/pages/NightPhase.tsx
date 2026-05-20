@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { checkWinCondition } from '../lib/checkWin'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 
@@ -50,6 +51,7 @@ export default function NightPhase() {
   const requiredDoneCount = requiredActors.filter(player => completedActorIds.has(player.id)).length
   const isConspirator = myPlayer?.role === 'conspirator'
   const aliveCitizens = alivePlayers.filter(player => player.role === 'citizen')
+  const nightKillTarget = killAction?.target_id
   
 
   const canUseKill =
@@ -153,6 +155,16 @@ export default function NightPhase() {
   }, [code])
 
   useEffect(() => {
+    if (!nightKillTarget) {
+      setKilledPlayer(null)
+      return
+    }
+
+    const target = players.find(player => player.id === nightKillTarget)
+    if (target) setKilledPlayer(target)
+  }, [nightKillTarget, players])
+
+  useEffect(() => {
     if (!room || !allRequiredActionsComplete || processing) return
     if (!isHost && !canAutoAdvance) return
 
@@ -167,9 +179,23 @@ export default function NightPhase() {
     if (!room || !allRequiredActionsComplete || (!isHost && !canAutoAdvance)) return
     setProcessing(true)
 
+    const { data: latestPlayers, error: playersError } = await supabase
+      .from('players')
+      .select('*')
+      .eq('room_id', room.id)
+
+    if (playersError || !latestPlayers) {
+      console.error('Failed to check win condition:', playersError)
+      setProcessing(false)
+      return
+    }
+
+    const winner = checkWinCondition(latestPlayers)
+    const nextPhase = winner ? 'gameover' : 'discussion'
+
     const { error } = await supabase
       .from('rooms')
-      .update({ phase: 'discussion' })
+      .update({ phase: nextPhase })
       .eq('id', room.id)
 
     if (error) {
@@ -178,7 +204,7 @@ export default function NightPhase() {
       return
     }
 
-    navigate(`/room/${code}/discussion`)
+    navigate(`/room/${code}/${nextPhase === 'gameover' ? 'gameover' : 'discussion'}`)
   }
 
   const submitNightAction = async () => {
@@ -263,6 +289,13 @@ export default function NightPhase() {
 
       console.log('Target eliminated', selectedTargetId)
       setKilledPlayer(players.find(player => player.id === selectedTargetId) || null)
+      setPlayers(prev =>
+        prev.map(player =>
+          player.id === selectedTargetId
+            ? { ...player, status: 'eliminated' }
+            : player
+        )
+      )
 
       const { error: roomError } = await supabase
         .from('rooms')
@@ -324,32 +357,6 @@ export default function NightPhase() {
     )
   }
 
-  if (isEliminated) {
-    return (
-      <div
-        className="relative min-h-screen flex flex-col items-center justify-center text-center px-8"
-        style={{
-          backgroundImage: `url(${bg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="relative z-10 max-w-sm rounded-2xl border border-alibi-red/40 bg-alibi-red/10 p-8">
-          <p className="font-mono text-alibi-red text-[9px] uppercase tracking-widest mb-3">
-            Eliminated
-          </p>
-          <h2 className="font-heading text-alibi-cream text-3xl uppercase tracking-widest mb-4">
-            You Are Out
-          </h2>
-          <p className="font-body text-alibi-cream/60 text-sm italic leading-relaxed">
-            Night falls, but your investigation is over. Wait for the remaining players to finish the game.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   if (killedPlayer) {
     return (
       <div
@@ -365,17 +372,17 @@ export default function NightPhase() {
         <div className="relative z-10 flex justify-between items-center px-8 py-6">
           <img src={logo} alt="Alibi" className="w-16" />
           <span className="font-heading text-alibi-red text-sm uppercase tracking-widest">
-            Morning Reveal
+            Morning Report
           </span>
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-8 pb-8 text-center">
-          <div className="w-full max-w-md rounded-2xl border-2 border-alibi-red bg-alibi-red/10 p-8">
+          <div className="w-full max-w-md rounded-2xl border-2 border-alibi-red bg-black/50 p-8 shadow-2xl">
             <p className="font-mono text-alibi-red text-[9px] uppercase tracking-widest mb-4">
-              During The Night
+              The Night Is Over
             </p>
 
-            <h1 className="font-heading text-alibi-cream text-4xl uppercase tracking-widest mb-4">
+            <h1 className="font-heading text-alibi-cream text-4xl uppercase tracking-widest mb-3">
               {killedPlayer.fake_name}
             </h1>
 
@@ -385,14 +392,44 @@ export default function NightPhase() {
 
             <div className="border-t border-alibi-red/30 my-6" />
 
-            <p className="font-body text-alibi-cream/70 text-sm italic leading-relaxed mb-6">
-              The night was not quiet. One player did not make it to the next day.
+            <p className="font-body text-alibi-cream/80 text-base leading-relaxed mb-3">
+              When morning came, one seat was empty.
+            </p>
+
+            <p className="font-body text-alibi-cream/60 text-sm italic leading-relaxed mb-5">
+              {killedPlayer.fake_name} was killed during the night. Everyone has a moment to take that in before the game moves on.
             </p>
 
             <p className="font-mono text-alibi-gold text-[10px] uppercase tracking-widest animate-pulse">
-              Dawn is coming...
+              {processing ? 'Checking what this means...' : 'Waiting for everyone...'}
             </p>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isEliminated) {
+    return (
+      <div
+        className="relative min-h-screen flex flex-col items-center justify-center text-center px-8"
+        style={{
+          backgroundImage: `url(${bg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/70" />
+        <div className="relative z-10 max-w-sm rounded-2xl border border-alibi-red/40 bg-black/50 p-8 shadow-2xl">
+          <p className="font-mono text-alibi-red text-[9px] uppercase tracking-widest mb-3">
+            You Are Out
+          </p>
+          <h2 className="font-heading text-alibi-cream text-3xl uppercase tracking-widest mb-4">
+            The Case Continues
+          </h2>
+          <p className="font-body text-alibi-cream/60 text-sm italic leading-relaxed">
+            Your part in the investigation is over, but the others are still playing. Stay close and watch how the truth comes out.
+          </p>
         </div>
       </div>
     )

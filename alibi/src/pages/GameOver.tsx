@@ -5,6 +5,7 @@ import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import conspiratorsImg from '../assets/conspirator.png'
 import citizensImg from '../assets/citizen.png'
+import { checkWinCondition } from '../lib/checkWin'
 import { playLoopingSound, playSound, stopSound } from '../utils/sound'
 
 export default function GameOver() {
@@ -51,9 +52,7 @@ export default function GameOver() {
 
     if (playersData) {
       setPlayers(playersData)
-      const alivePlayers      = playersData.filter(p => p.status === 'alive')
-      const aliveConspirators = alivePlayers.filter(p => p.role === 'conspirator')
-      setWinner(aliveConspirators.length === 0 ? 'citizens' : 'conspirators')
+      setWinner(checkWinCondition(playersData) || 'conspirators')
     }
 
     setLoading(false)
@@ -123,8 +122,8 @@ export default function GameOver() {
               </h2>
               <p className="font-body text-alibi-cream/60 text-sm italic mt-2">
                 {winner === 'citizens'
-                  ? 'Justice has been served. All conspirators have been exposed.'
-                  : 'The conspiracy succeeded. The truth never came out.'
+                  ? 'The last conspirator has been exposed. The citizens kept the truth alive.'
+                  : 'The conspirators now control the room. The truth disappears with them.'
                 }
               </p>
             </div>

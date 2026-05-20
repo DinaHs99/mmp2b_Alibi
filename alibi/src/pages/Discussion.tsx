@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
-import { playSound } from '../utils/sound'
+import { playLoopingSound, stopSound } from '../utils/sound'
 
 interface Message {
   id: string
@@ -55,6 +55,7 @@ export default function Discussion() {
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
+      stopSound('timer')
       supabase.getChannels().forEach(channel => {
         supabase.removeChannel(channel)
       })
@@ -203,10 +204,11 @@ export default function Discussion() {
     timerRef.current = setInterval(() => {
         setTimeLeft(prev => {
             if(prev === 15) {
-              playSound('timer')
+              playLoopingSound('timer')
             }
             if (prev <= 1) {
             clearInterval(timerRef.current)
+            stopSound('timer')
             
             if (canControlRoomRef.current) {
             moveToVoting(roomRef.current.id)
@@ -219,6 +221,7 @@ export default function Discussion() {
     }
 
   const moveToVoting = async (roomId: string) => {
+    stopSound('timer')
     await supabase
       .from('rooms')
       .update({ phase: 'voting' })

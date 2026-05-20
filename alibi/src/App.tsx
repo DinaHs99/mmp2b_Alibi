@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home.tsx'
 import Room from './pages/Room.tsx'
@@ -12,18 +12,20 @@ import Voting from './pages/Voting.tsx'
 import VotingReveal from './pages/VotingReveal.tsx'
 import GameOver from './pages/GameOver.tsx'
 import NightPhase from './pages/NightPhase.tsx'
-import { playSound } from './utils/sound'
+import { isSoundMuted, playSound, toggleSoundMuted } from './utils/sound'
 
 import JoinCode from './pages/join/JoinCode.tsx'
 import JoinName from './pages/join/JoinName.tsx'
 
 function App() {
+  const [soundMuted, setSoundMuted] = useState(() => isSoundMuted())
+
   useEffect(() => {
     const handleButtonClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null
       const button = target?.closest('button') as HTMLButtonElement | null
 
-      if (!button || button.disabled) return
+      if (!button || button.disabled || button.dataset.sound === 'off') return
 
       playSound('ui')
     }
@@ -31,8 +33,25 @@ function App() {
     document.addEventListener('click', handleButtonClick)
     return () => document.removeEventListener('click', handleButtonClick)
   }, [])
+  const handleToggleSound = () => {
+    setSoundMuted(toggleSoundMuted())
+  }
+
   return (
     <BrowserRouter>
+      <button
+        type="button"
+        data-sound="off"
+        onClick={handleToggleSound}
+        aria-label={soundMuted ? 'Turn sound on' : 'Turn sound off'}
+        className={`fixed top-3 right-20 z-50 h-11 min-w-28 rounded-full border px-4 font-mono text-[10px] uppercase tracking-widest transition ${
+          soundMuted
+            ? 'border-alibi-cream/20 bg-black/70 text-alibi-cream/50'
+            : 'border-alibi-gold/50 bg-black/70 text-alibi-gold'
+        }`}
+      >
+        {soundMuted ? 'Sound Off' : 'Sound On'}
+      </button>
       <Routes>
         <Route path="/"             element={<Home />} />
         <Route path="/how-to-play"  element={<HowToPlay />} />

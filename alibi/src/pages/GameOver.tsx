@@ -5,7 +5,7 @@ import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import conspiratorsImg from '../assets/conspirator.png'
 import citizensImg from '../assets/citizen.png'
-import { playSound } from '../utils/sound'
+import { playLoopingSound, playSound, stopSound } from '../utils/sound'
 
 export default function GameOver() {
   const { code } = useParams()
@@ -22,9 +22,15 @@ export default function GameOver() {
   useEffect(() => {
     if (!winner) return
 
-    playSound('gameOver')
+    playLoopingSound('gameOver')
     if (winner === 'citizens') playSound('citizensWin')
     if (winner === 'conspirators') playSound('conspiratorsWin')
+
+    return () => {
+      stopSound('gameOver')
+      stopSound('citizensWin')
+      stopSound('conspiratorsWin')
+    }
   }, [winner])
 
   const init = async () => {

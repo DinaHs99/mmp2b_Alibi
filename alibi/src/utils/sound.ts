@@ -34,12 +34,25 @@ const DEFAULT_VOLUME: Record<SoundKey, number> = {
 
 const audioCache = new Map<SoundKey, HTMLAudioElement>()
 
+const getAudio = (key: SoundKey) => {
+  const audio = audioCache.get(key) || new Audio(SOUND_PATHS[key])
+  audioCache.set(key, audio)
+  return audio
+}
+
 export const isSoundMuted = () => {
   return localStorage.getItem(SOUND_MUTED_KEY) === 'true'
 }
 
 export const setSoundMuted = (muted: boolean) => {
   localStorage.setItem(SOUND_MUTED_KEY, String(muted))
+
+  if (muted) {
+    audioCache.forEach(audio => {
+      audio.pause()
+      audio.currentTime = 0
+    })
+  }
 }
 
 export const toggleSoundMuted = () => {
@@ -51,11 +64,11 @@ export const toggleSoundMuted = () => {
 export const playSound = async (key: SoundKey, volume = DEFAULT_VOLUME[key]) => {
   if (isSoundMuted()) return
 
-  const audio = audioCache.get(key) || new Audio(SOUND_PATHS[key])
-  audioCache.set(key, audio)
+  const audio = getAudio(key)
 
   audio.pause()
   audio.currentTime = 0
+  audio.loop = false
   audio.volume = volume
 
   try {
@@ -63,4 +76,31 @@ export const playSound = async (key: SoundKey, volume = DEFAULT_VOLUME[key]) => 
   } catch (error) {
     console.warn(`Sound "${key}" could not play.`, error)
   }
+}
+
+export const playLoopingSound = async (key: SoundKey, volume = DEFAULT_VOLUME[key]) => {
+  if (isSoundMuted()) return
+
+  const audio = getAudio(key)
+  audio.loop = true
+  audio.volume = volume
+
+  if (!audio.paused) return
+
+  audio.currentTime = 0
+
+  try {
+    await audio.play()
+  } catch (error) {
+    console.warn(`Sound "${key}" could not play.`, error)
+  }
+}
+
+export const stopSound = (key: SoundKey) => {
+  const audio = audioCache.get(key)
+  if (!audio) return
+
+  audio.pause()
+  audio.currentTime = 0
+  audio.loop = false
 }

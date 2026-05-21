@@ -39,6 +39,7 @@ export default function NightPhase() {
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null)
   const [killedPlayer, setKilledPlayer] = useState<Player | null>(null)
   const [investigationResult, setInvestigationResult] = useState<string | null>(null)
+  const [showDawnTransition, setShowDawnTransition] = useState(false)
 
   const isHost = sessionStorage.getItem('alibi_is_host') === 'true'
   const sessionId = sessionStorage.getItem('alibi_session_id')
@@ -193,7 +194,12 @@ export default function NightPhase() {
       startNextDay()
     }, killedPlayer ? 6000 : 3000)
 
-    return () => clearTimeout(timeout)
+    setShowDawnTransition(true)
+
+    return () => {
+      clearTimeout(timeout)
+      setShowDawnTransition(false)
+    }
   }, [room, canAutoAdvance, processing, nightActions, killedPlayer])
 
   const startNextDay = async () => {
@@ -428,11 +434,11 @@ export default function NightPhase() {
             <div className="border-t border-alibi-red/30 my-6" />
 
             <p className="font-body text-alibi-cream/80 text-base leading-relaxed mb-3">
-              When morning came, one seat was empty.
+              Morning came, and one seat was empty.
             </p>
 
             <p className="font-body text-alibi-cream/60 text-sm italic leading-relaxed mb-5">
-              {killedPlayer.fake_name} was killed during the night. Everyone has a moment to take that in before the game moves on.
+              {killedPlayer.fake_name} was killed during the night. Read this carefully before the discussion starts.
             </p>
 
             <p className="font-mono text-alibi-gold text-[10px] uppercase tracking-widest animate-pulse">
@@ -541,7 +547,7 @@ export default function NightPhase() {
                         {player.fake_name}
                       </p>
                       <p className="font-mono text-alibi-cream/40 text-[9px] mt-1 uppercase tracking-widest">
-                        {getRoleLabel(player.role)}
+                        Possible target
                       </p>
                     </div>
                   </button>
@@ -673,9 +679,16 @@ export default function NightPhase() {
 
           {/* Completion message */}
           {allRequiredActionsComplete && (
-            <p className="font-mono text-alibi-gold text-[10px] uppercase tracking-widest mt-6 animate-pulse">
-              {processing ? 'Starting next day...' : 'All actions complete. Dawn is coming...'}
-            </p>
+            <div className="mt-6 rounded-2xl border border-alibi-gold/30 bg-alibi-gold/10 px-4 py-4">
+              <p className="font-mono text-alibi-gold text-[10px] uppercase tracking-widest animate-pulse">
+                {processing ? 'Starting next day...' : 'All actions complete'}
+              </p>
+              <p className="mt-2 font-body text-alibi-cream/70 text-sm italic leading-relaxed">
+                {showDawnTransition
+                  ? 'Dawn is coming. The room will see what happened in a moment.'
+                  : 'Waiting for the final night action...'}
+              </p>
+            </div>
           )}
         </div>
       </div>

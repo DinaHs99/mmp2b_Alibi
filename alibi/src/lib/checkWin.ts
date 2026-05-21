@@ -7,7 +7,7 @@ interface Player {
 export const checkWinCondition = (players: Player[]): 'citizens' | 'conspirators' | null => {
     const alivePlayers = players.filter(player => player.status === 'alive')
     const aliveconspirators= alivePlayers.filter(player => player.role === 'conspirator')
-    const alivecitizens = alivePlayers.filter(player => player.role === 'citizen')
+    const alivecitizens = alivePlayers.filter(player => player.role !== 'conspirator')
     if (aliveconspirators.length === 0) return 'citizens'
     if (aliveconspirators.length >= alivecitizens.length) return 'conspirators'
     return null

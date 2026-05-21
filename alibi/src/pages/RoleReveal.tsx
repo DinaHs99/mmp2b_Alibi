@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import bg from '../assets/hero-texture.png'
 import logo from '../assets/logo1.png'
 import conspiratorimg from '../assets/conspirator.png'
+import investigatorimg from '../assets/Investigator.png'
 import citizenimg from '../assets/citizen.png'
 import { playLoopingSound, playSound, stopSound } from '../utils/sound'
 
@@ -93,6 +94,9 @@ export default function RoleReveal() {
   }, [showScenario, scenario])
 
   const isConspirator = player?.role === 'conspirator'
+  const isInvestigator = player?.role === 'investigator'
+  const roleLabel = isConspirator ? 'Conspirator' : isInvestigator ? 'Investigator' : 'Citizen'
+  const roleImage = isConspirator ? conspiratorimg : isInvestigator ? investigatorimg : citizenimg
   const scenarioVideo = scenario?.id ? SCENARIO_VIDEOS[scenario.id] : null
 
   if (loading) {
@@ -224,8 +228,8 @@ export default function RoleReveal() {
               {/* Role Image */}
               <div className="w-full mb-6 rounded-xl overflow-hidden">
                 <img
-                  src={isConspirator ? conspiratorimg : citizenimg}
-                  alt={isConspirator ? 'Conspirator' : 'Citizen'}
+                  src={roleImage}
+                  alt={roleLabel}
                   className="w-full object-cover"
                 />
               </div>
@@ -234,7 +238,7 @@ export default function RoleReveal() {
               <p className={`font-mono text-xs uppercase tracking-widest mb-2 ${
                 isConspirator ? 'text-alibi-red' : 'text-alibi-gold'
               }`}>
-                {isConspirator ? 'Conspirator' : 'Citizen'}
+                {roleLabel}
               </p>
 
               {/* Occupation */}
@@ -264,8 +268,18 @@ export default function RoleReveal() {
                 </>
               )}
 
+              {/* Investigator extra info */}
+              {isInvestigator && (
+                <>
+                  <div className="border-t border-alibi-gold/20 mt-6 mb-4" />
+                  <p className="font-body text-alibi-cream/60 text-xs italic">
+                    You are the Investigator. Use your clue, watch the room, and inspect carefully when night falls.
+                  </p>
+                </>
+              )}
+
               {/* Citizen extra info */}
-              {!isConspirator && (
+              {!isConspirator && !isInvestigator && (
                 <>
                   <div className="border-t border-alibi-gold/20 mt-6 mb-4" />
                   <p className="font-body text-alibi-cream/60 text-xs italic">

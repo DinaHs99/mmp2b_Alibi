@@ -5,11 +5,12 @@ import paper from '../assets/paper1.png'
 import ConspiratorsImage from '../assets/conspirator.png'
 import CitizenImage from '../assets/citizen.png'
 
-type TabType = 'Objective' | 'Teams' | 'The Cycle'
+type TabType = 'Objective' | 'Teams' | 'Roles' | 'The Cycle'
 
 const HowToPlay = () => {
   const [activeTab, setActiveTab] = useState<TabType>('Objective')
   const navigate = useNavigate()
+  const playerName = sessionStorage.getItem('alibi_player_name') || 'PLAYER'
 
   return (
     <div
@@ -22,47 +23,40 @@ const HowToPlay = () => {
     >
       <div className="absolute inset-0 bg-black/40 z-0" />
 
-      {/* Header */}
       <div className="absolute top-6 left-6 z-20">
         <h1 className="font-heading text-alibi-gold text-2xl md:text-4xl uppercase tracking-widest">
           How To Play
         </h1>
       </div>
 
-      {/* Back Button */}
       <div className="absolute top-6 right-6 z-20">
         <button
           onClick={() => navigate('/')}
           className="font-heading text-alibi-cream text-sm uppercase tracking-widest hover:text-alibi-gold transition"
         >
-          ← Back
+          Back
         </button>
       </div>
 
-      {/* Paper Wrapper */}
       <div
         className="relative z-10 w-full"
         style={{ maxWidth: '520px' }}
       >
-        {/* Paper Background */}
         <img
           src={paper}
           alt=""
           className="absolute inset-0 w-full h-full object-fill"
         />
 
-        {/* Content */}
         <div
           className="relative flex flex-col"
           style={{
-            padding: '100px 36px 40px 36px',
-            minHeight: '600px',
+            padding: '88px 36px 54px 36px',
+            minHeight: '560px',
           }}
         >
-
-          {/* Tabs */}
           <div className="flex gap-2 mb-4 justify-center flex-shrink-0 flex-wrap">
-            {(['Objective', 'Teams', 'The Cycle'] as TabType[]).map((tab) => (
+            {(['Objective', 'Teams', 'Roles', 'The Cycle'] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -77,12 +71,10 @@ const HowToPlay = () => {
             ))}
           </div>
 
-          {/* Scrollable Content */}
           <div
             className="flex-1 overflow-y-auto pr-1"
-            style={{ scrollbarWidth: 'none', maxHeight: '420px' }}
+            style={{ scrollbarWidth: 'none', maxHeight: '360px' }}
           >
-            {/* Title */}
             <h2 className="font-heading text-center text-xl uppercase tracking-widest text-stone-900 mb-1">
               {activeTab === 'Objective' ? 'The Objective' : activeTab}
             </h2>
@@ -93,11 +85,10 @@ const HowToPlay = () => {
 
             <div className="border-t border-stone-400/50 mb-4" />
 
-            {/* Objective Tab */}
             {activeTab === 'Objective' && (
               <div className="text-stone-800">
-                <p className="font-body text-sm leading-relaxed w-[400px]  text-center">
-                  A mystery has occurred. Players are secretly split into two teams —
+                <p className="font-body text-sm leading-relaxed w-full max-w-[400px] mx-auto text-center">
+                  A mystery has occurred. Players are secretly split into two teams:
                   Conspirators and Citizens. Nobody knows who is on which side.
                   Use your private clue, question everyone, and vote to expose the truth.
                 </p>
@@ -108,31 +99,39 @@ const HowToPlay = () => {
                   Win Conditions
                 </h3>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded">
+                <div className="grid grid-cols-2 gap-3 max-w-[420px] w-full mx-auto">
+                  <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded w-full">
                     <h4 className="font-body text-xs uppercase mb-1 border-b border-stone-400 pb-1">
                       Citizens
                     </h4>
-                    <p className="font-body text-[9px] leading-tight italic">
+                    <p className="font-body text-[10px] leading-tight italic">
                       Identify and vote out all Conspirators before they take control.
                     </p>
                   </div>
-                  <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded">
+                  <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded w-full">
                     <h4 className="font-body text-xs uppercase mb-1 border-b border-stone-400 pb-1">
                       Conspirators
                     </h4>
-                    <p className="font-body text-[9px] leading-tight italic">
+                    <p className="font-body text-[10px] leading-tight italic">
                       Eliminate citizens until your team equals or outnumbers them.
                     </p>
                   </div>
                 </div>
+
+                <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded max-w-[420px] w-full mx-auto mt-4">
+                  <h4 className="font-body text-xs uppercase mb-1 border-b border-stone-400 pb-1">
+                    Player Count
+                  </h4>
+                  <p className="font-body text-[10px] leading-relaxed italic">
+                    5 players: simple game, no night kill. 6+ players: special roles and night actions can appear.
+                  </p>
+                </div>
               </div>
             )}
 
-            {/* Teams Tab */}
             {activeTab === 'Teams' && (
               <div className="text-stone-800 space-y-4">
-                <div className="border border-stone-800/20 p-4 bg-stone-900/5 rounded">
+                <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded max-w-[420px] w-full mx-auto">
                   <img
                     src={ConspiratorsImage}
                     alt="Conspirators"
@@ -141,12 +140,12 @@ const HowToPlay = () => {
                   <h4 className="font-heading text-[11px] font-bold uppercase mb-2 tracking-widest">
                     Conspirators
                   </h4>
-                  <p className="font-body text-[9px] leading-relaxed italic">
-                    Blend in — deny, deflect, and cast doubt on innocent players.
+                  <p className="font-body text-[10px] leading-relaxed italic">
+                    Blend in, deny, deflect, and cast doubt on innocent players. In 6+ player games, Conspirators may get one night kill: they secretly remove one citizen during the night.
                   </p>
                 </div>
 
-                <div className="border border-stone-800/20 p-4 bg-stone-900/5 rounded">
+                <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded max-w-[420px] w-full mx-auto">
                   <img
                     src={CitizenImage}
                     alt="Citizens"
@@ -155,39 +154,82 @@ const HowToPlay = () => {
                   <h4 className="font-heading text-[11px] font-bold uppercase mb-2 tracking-widest">
                     Citizens
                   </h4>
-                  <p className="font-body text-[9px] leading-relaxed italic">
-                    Use your private clue to find contradictions and expose the truth.
+                  <p className="font-body text-[10px] leading-relaxed italic">
+                    Use your private clue to find contradictions and expose the truth. In 6+ player games, one citizen may become the Investigator.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* The Cycle Tab */}
+            {activeTab === 'Roles' && (
+              <div className="text-stone-800 space-y-2">
+                <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded max-w-[420px] w-full mx-auto">
+                  <h4 className="font-heading text-[10px] font-bold uppercase mb-1 tracking-widest">
+                    Citizen
+                  </h4>
+                  <p className="font-body text-[10px] leading-relaxed italic">
+                    You are trying to find the Conspirators. Share ideas, compare clues, and vote carefully.
+                  </p>
+                </div>
+
+                <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded max-w-[420px] w-full mx-auto">
+                  <h4 className="font-heading text-[10px] font-bold uppercase mb-1 tracking-widest">
+                    Investigator
+                  </h4>
+                  <p className="font-body text-[10px] leading-relaxed italic">
+                    Only appears in 6+ player games. The Investigator is on the citizen team and can inspect one player at night for a private hint.
+                  </p>
+                </div>
+
+                <div className="border border-stone-800/20 p-3 bg-stone-900/5 rounded max-w-[420px] w-full mx-auto">
+                  <h4 className="font-heading text-[10px] font-bold uppercase mb-1 tracking-widest">
+                    Conspirator
+                  </h4>
+                  <p className="font-body text-[10px] leading-relaxed italic">
+                    You are hiding from the citizens. In 6+ player games, your team may use one night kill to remove a citizen before morning.
+                  </p>
+                </div>
+
+                <div className="border border-red-900/20 p-3 bg-red-900/5 rounded max-w-[420px] w-full mx-auto">
+                  <h4 className="font-heading text-[10px] font-bold uppercase mb-1 tracking-widest text-red-800">
+                    Important
+                  </h4>
+                  <p className="font-body text-[10px] leading-relaxed italic">
+                    A 5-player game has no Investigator and no night kill, so the first game stays easy to learn.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'The Cycle' && (
               <div className="text-stone-800 space-y-2">
                 {[
                   {
-                    phase: '1 — Preparation',
+                    phase: '1 - Preparation',
                     desc: 'Teams assigned secretly. Each player receives a unique private clue. Read it alone.'
                   },
                   {
-                    phase: '2 — Evidence',
+                    phase: '2 - Evidence',
                     desc: 'A new piece of evidence is revealed each round. Use it to narrow down the suspects.'
                   },
                   {
-                    phase: '3 — Discussion',
+                    phase: '3 - Discussion',
                     desc: 'Everyone debates. Use your clue to find contradictions. Nobody has the full picture.'
                   },
                   {
-                    phase: '4 — The Vote',
+                    phase: '4 - The Vote',
                     desc: 'Vote simultaneously. Most votes gets eliminated and their role revealed.'
                   },
                   {
-                    phase: '5 — The Verdict',
-                    desc: 'All Conspirators gone? Citizens win. Outnumbered? The conspiracy succeeds.'
+                    phase: '5 - Night Phase',
+                    desc: 'In 6+ player games, special roles act in secret. A night kill means one citizen may be removed before morning.'
+                  },
+                  {
+                    phase: '6 - The Verdict',
+                    desc: 'All Conspirators gone? Citizens win. Equal or outnumbered? The conspiracy succeeds.'
                   },
                 ].map((item) => (
-                  <div key={item.phase} className="border border-stone-800/20 p-3 bg-stone-900/5 rounded">
+                  <div key={item.phase} className="border border-stone-800/20 p-3 bg-stone-900/5 rounded max-w-[420px] w-full mx-auto">
                     <h4 className="font-heading text-[10px] font-bold uppercase mb-1 tracking-widest">
                       {item.phase}
                     </h4>
@@ -200,24 +242,22 @@ const HowToPlay = () => {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-between items-end border-t border-stone-400/30 pt-4 mt-4 flex-shrink-0">
+          <div className="flex justify-between items-end border-t border-stone-400/30 pt-3 mt-3 pb-2 flex-shrink-0">
             <div>
-              <p className="font-mono text-[7px] italic opacity-50 mb-1">
+              <p className="font-mono text-[8px] italic opacity-50 mb-1">
                 I have read the briefing.
               </p>
               <p className="font-mono text-sm font-bold border-b border-stone-900 tracking-tighter">
-                MAX MUSTERMANN
+                {playerName}
               </p>
             </div>
             <div className="flex flex-col items-center">
               <div
-                className="border-4 border-red-700/80 px-2 py-1 text-red-700/80 font-black uppercase text-lg tracking-tighter"
-                style={{ transform: 'rotate(-12deg)' }}
+                className="border-4 border-red-700/80 px-2 py-1 text-red-700/80 font-black uppercase text-base tracking-tighter"
+                style={{ transform: 'rotate(-10deg)' }}
               >
                 Confirmed
               </div>
-              <p className="font-mono text-[7px] mt-2 opacity-50">tap to proceed</p>
             </div>
           </div>
 

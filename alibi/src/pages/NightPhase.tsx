@@ -38,28 +38,48 @@ export default function NightPhase() {
   const [submittingAction, setSubmittingAction] = useState(false)
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null)
   const [killedPlayer, setKilledPlayer] = useState<Player | null>(null)
+  const [investigationResult, setInvestigationResult] = useState<string | null>(null)
 
   const isHost = sessionStorage.getItem('alibi_is_host') === 'true'
   const sessionId = sessionStorage.getItem('alibi_session_id')
   const alivePlayers = players.filter(player => player.status === 'alive')
-  const requiredActors = alivePlayers.filter(player => player.role === 'conspirator')
+  const aliveConspirators = alivePlayers.filter(player => player.role === 'conspirator')
+  const aliveInvestigator = alivePlayers.find(player => player.role === 'investigator')
   const completedActorIds = new Set(nightActions.map(action => action.actor_id))
   const hasSubmittedAction = myPlayer ? completedActorIds.has(myPlayer.id) : false
   const killAction = nightActions.find(action => action.action_type === 'kill')
-  const allRequiredActionsComplete =
+  const hasConspiratorAction = aliveConspirators.length > 0
+  const hasInvestigatorAction = Boolean(aliveInvestigator)
+  const conspiratorActionComplete =
     Boolean(killAction) ||
-    requiredActors.length === 0 || requiredActors.every(player => completedActorIds.has(player.id))
-  const requiredDoneCount = requiredActors.filter(player => completedActorIds.has(player.id)).length
+    !hasConspiratorAction ||
+    aliveConspirators.every(player => completedActorIds.has(player.id))
+  const investigatorActionComplete =
+    !hasInvestigatorAction || completedActorIds.has(aliveInvestigator!.id)
+  const allRequiredActionsComplete = conspiratorActionComplete && investigatorActionComplete
+  const requiredActionCount = Number(hasConspiratorAction) + Number(hasInvestigatorAction)
+  const requiredDoneCount =
+    Number(hasConspiratorAction && conspiratorActionComplete) +
+    Number(hasInvestigatorAction && investigatorActionComplete)
   const isConspirator = myPlayer?.role === 'conspirator'
-  const aliveCitizens = alivePlayers.filter(player => player.role === 'citizen')
+  const isInvestigator = myPlayer?.role === 'investigator'
+  const aliveCitizens = alivePlayers.filter(player => player.role !== 'conspirator')
+  const inspectTargets = myPlayer
+    ? alivePlayers.filter(player => player.id !== myPlayer.id)
+    : []
   const nightKillTarget = killAction?.target_id
-  
 
   const canUseKill =
     isConspirator &&
     !room?.night_kill_used &&
-    alivePlayers.length > 3 &&
+    room?.player_count >= 6 &&
     aliveCitizens.length > 0
+
+  const getRoleLabel = (role: string) => {
+    if (role === 'conspirator') return 'Conspirator'
+    if (role === 'investigator') return 'Investigator'
+    return 'Citizen'
+  }
 
   useEffect(() => {
     if (!code) return
@@ -235,25 +255,7 @@ export default function NightPhase() {
   }
 
   const submitKill = async () => {
-    console.log('submitKill clicked', {
-      roomId: room?.id,
-      round: room?.round,
-      myPlayerId: myPlayer?.id,
-      selectedTargetId,
-      submittingAction,
-      canUseKill,
-      hasSubmittedAction,
-    })
-
-    if (!room || !myPlayer || !selectedTargetId || submittingAction) {
-      console.log('submitKill blocked', {
-        hasRoom: Boolean(room),
-        hasMyPlayer: Boolean(myPlayer),
-        selectedTargetId,
-        submittingAction,
-      })
-      return
-    }
+    if (!room || !myPlayer || !selectedTargetId || submittingAction || hasSubmittedAction || !canUseKill) return
 
     setSubmittingAction(true)
 
@@ -275,8 +277,6 @@ export default function NightPhase() {
         return
       }
 
-      console.log('Kill action inserted', data)
-
       const { error: playerError } = await supabase
         .from('players')
         .update({ status: 'eliminated' })
@@ -288,7 +288,6 @@ export default function NightPhase() {
         return
       }
 
-      console.log('Target eliminated', selectedTargetId)
       setKilledPlayer(players.find(player => player.id === selectedTargetId) || null)
       setPlayers(prev =>
         prev.map(player =>
@@ -312,10 +311,45 @@ export default function NightPhase() {
         return
       }
 
-      console.log('Room night kill state updated')
-
       setNightActions(prev => [...prev, data])
       setSubmittingAction(false)
+  }
+
+  const submitInvestigate = async () => {
+    if (!room || !myPlayer || !selectedTargetId || submittingAction || hasSubmittedAction) return
+    setSubmittingAction(true)
+
+    const { data, error } = await supabase
+      .from('night_actions')
+      .insert({
+        room_id: room.id,
+        round: room.round,
+        actor_id: myPlayer.id,
+        target_id: selectedTargetId,
+        action_type: 'inspect',
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Failed to submit night action:', error)
+      setSubmittingAction(false)
+      return
+    }
+
+    const target = players.find(p => p.id === selectedTargetId)
+
+    if (target) {
+      const result =
+        target.role === 'conspirator'
+          ? `${target.fake_name} looks Suspicious`
+          : `${target.fake_name} does not look suspicious`
+
+      setInvestigationResult(result)
+    }
+
+    setNightActions(prev => [...prev, data as NightAction])
+    setSubmittingAction(false)
   }
 
   const submitSkip = async () => {
@@ -388,7 +422,7 @@ export default function NightPhase() {
             </h1>
 
             <p className="font-mono text-alibi-cream/50 text-xs uppercase tracking-widest mb-6">
-              {killedPlayer.role === 'citizen' ? 'Citizen' : 'Conspirator'}
+              {getRoleLabel(killedPlayer.role)}
             </p>
 
             <div className="border-t border-alibi-red/30 my-6" />
@@ -474,7 +508,7 @@ export default function NightPhase() {
               Night Actions
             </p>
             <p className="font-body text-alibi-cream/70 text-sm">
-              {requiredDoneCount} / {requiredActors.length} required actions complete
+              {requiredDoneCount} / {requiredActionCount} required actions complete
             </p>
           </div>
 
@@ -494,10 +528,7 @@ export default function NightPhase() {
                 {aliveCitizens.map(player => (
                   <button
                     key={player.id}
-                    onClick={() => {
-                      console.log('Night kill target selected', player)
-                      setSelectedTargetId(player.id)
-                    }}
+                    onClick={() => setSelectedTargetId(player.id)}
                     className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition text-left ${
                       selectedTargetId === player.id
                         ? 'border-alibi-red bg-alibi-red/20'
@@ -510,7 +541,7 @@ export default function NightPhase() {
                         {player.fake_name}
                       </p>
                       <p className="font-mono text-alibi-cream/40 text-[9px] mt-1 uppercase tracking-widest">
-                        Citizen
+                        {getRoleLabel(player.role)}
                       </p>
                     </div>
                   </button>
@@ -575,11 +606,69 @@ export default function NightPhase() {
             </p>
           )}
 
+          {isInvestigator && !hasSubmittedAction && (
+            <div className="flex flex-col items-center gap-6">
+              <div className="text-center">
+                <p className="font-heading text-alibi-gold text-xl uppercase tracking-widest">
+                  Investigation
+                </p>
+
+                <p className="font-body text-alibi-cream/60 mt-2">
+                  Select one player to inspect.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {inspectTargets.map(player => (
+                  <button
+                    key={player.id}
+                    onClick={() => setSelectedTargetId(player.id)}
+                    className={`p-4 rounded-2xl border transition ${
+                      selectedTargetId === player.id
+                        ? 'border-alibi-gold bg-alibi-gold/10'
+                        : 'border-alibi-cream/20 bg-black/20'
+                      }`}
+                  >
+                    <PlayerAvatar className="mx-auto h-14 w-14" />
+                    <p className="mt-2 font-heading text-alibi-cream">
+                      {player.fake_name}
+                    </p>
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={submitInvestigate}
+                disabled={!selectedTargetId || submittingAction}
+                className="bg-alibi-gold text-black px-6 py-3 rounded-2xl font-heading disabled:opacity-30"
+              >
+                {submittingAction ? 'INSPECTING...' : 'INSPECT PLAYER'}
+              </button>
+            </div>
+          )}
+          {isInvestigator && hasSubmittedAction && (
+            <p className="font-body text-alibi-cream/40 text-sm italic">
+              Your investigation is complete. Waiting for the night to end...
+            </p>
+          )}
+
           {/* Citizen view */}
-          {!isConspirator && (
+          {!isConspirator && !isInvestigator && (
             <p className="font-body text-alibi-cream/40 text-sm italic">
               You have no action tonight. Wait for the night to end...
             </p>
+          )}
+
+          {investigationResult && (
+            <div className="mt-6 border border-alibi-gold/30 bg-black/40 rounded-2xl p-4 text-center">
+              <p className="font-heading text-alibi-gold uppercase tracking-widest text-sm">
+                Investigation Result
+              </p>
+
+              <p className="mt-2 text-alibi-cream">
+                {investigationResult}
+              </p>
+            </div>
           )}
 
           {/* Completion message */}
@@ -588,7 +677,6 @@ export default function NightPhase() {
               {processing ? 'Starting next day...' : 'All actions complete. Dawn is coming...'}
             </p>
           )}
-
         </div>
       </div>
     </div>

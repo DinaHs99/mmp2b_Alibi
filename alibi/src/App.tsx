@@ -44,7 +44,7 @@ function App() {
         data-sound="off"
         onClick={handleToggleSound}
         aria-label={soundMuted ? 'Turn sound on' : 'Turn sound off'}
-        className={`fixed top-3 right-20 z-50 h-11 min-w-28 rounded-full border px-4 font-mono text-[10px] uppercase tracking-widest transition ${
+        className={`fixed right-4 top-16 z-50 h-9 min-w-24 rounded-full border px-3 font-mono text-[9px] uppercase tracking-widest transition sm:right-20 sm:top-3 sm:h-11 sm:min-w-28 sm:px-4 sm:text-[10px] ${
           soundMuted
             ? 'border-alibi-cream/20 bg-black/70 text-alibi-cream/50'
             : 'border-alibi-gold/50 bg-black/70 text-alibi-gold'

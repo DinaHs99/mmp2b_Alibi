@@ -175,7 +175,7 @@ export default function Room() {
           <p className="font-body text-alibi-cream/60 text-sm uppercase tracking-widest mb-2">
             Room Code
           </p>
-          <h1 className="font-heading text-alibi-gold text-6xl tracking-widest mb-4">
+          <h1 className="font-body text-alibi-gold text-6xl tracking-widest mb-4">
             {code}
           </h1>
           <button

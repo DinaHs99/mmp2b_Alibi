@@ -39,7 +39,14 @@ export default function CreateName() {
         </p>
 
         {/* Input */}
+        <label
+          htmlFor="create-player-name"
+          className="font-mono text-alibi-cream/70 text-[10px] uppercase tracking-widest mb-3"
+        >
+          Player name
+        </label>
         <input
+          id="create-player-name"
           type="text"
           value={input}
           onChange={e => {
@@ -49,12 +56,13 @@ export default function CreateName() {
           onKeyDown={e => e.key === 'Enter' && handleNext()}
           placeholder="Your name..."
           maxLength={20}
+          aria-describedby={error ? 'create-player-name-error' : undefined}
           className="font-body bg-transparent border-b-2 border-alibi-gold text-alibi-cream text-center text-xl outline-none w-72 pb-2 mb-2 placeholder:text-alibi-cream/30"
         />
 
         {/* Error */}
         {error && (
-          <p className="font-body text-alibi-red text-xs mb-4">{error}</p>
+          <p id="create-player-name-error" className="font-body text-alibi-red text-xs mb-4">{error}</p>
         )}
 
         {/* Step dots */}

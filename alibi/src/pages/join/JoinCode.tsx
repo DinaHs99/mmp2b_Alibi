@@ -9,6 +9,7 @@ export default function JoinCode() {
 
 
   const { joinRoom, loading, error } = useJoinRoom()
+  const visibleError = localError || error
 
   const handleJoin = async () => {
     console.log('handleJoin called with:', input)
@@ -43,7 +44,14 @@ export default function JoinCode() {
         </p>
 
         {/* Code Input */}
+        <label
+          htmlFor="room-code"
+          className="font-mono text-alibi-cream/70 text-[10px] uppercase tracking-widest mb-3"
+        >
+          Room code
+        </label>
         <input
+          id="room-code"
           type="text"
           value={input}
           onChange={e => {
@@ -53,15 +61,13 @@ export default function JoinCode() {
           onKeyDown={e => e.key === 'Enter' && handleJoin()}
           placeholder="ABC123"
           maxLength={6}
+          aria-describedby={visibleError ? 'room-code-error' : undefined}
           className="font-mono bg-transparent border-b-2 border-alibi-gold text-alibi-gold text-center text-3xl outline-none w-72 pb-2 mb-2 placeholder:text-alibi-cream/30 tracking-widest"
         />
 
         {/* Errors */}
-        {localError && (
-          <p className="font-body text-alibi-red text-xs mb-4">{localError}</p>
-        )}
-        {error && (
-          <p className="font-body text-alibi-red text-xs mb-4">{error}</p>
+        {visibleError && (
+          <p id="room-code-error" className="font-body text-alibi-red text-xs mb-4">{visibleError}</p>
         )}
 
         {/* Step dots */}

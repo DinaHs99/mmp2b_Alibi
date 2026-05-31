@@ -467,16 +467,25 @@ export default function Discussion() {
         </div>
 
         {/* Input */}
-        <div className="flex-shrink-0 flex gap-3 items-center py-3">
-          <input
-            type="text"
-                        value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && sendMessage()}
-            placeholder={timerStarted ? "Say something..." : "Waiting for discussion to start..."}
-            disabled={!timerStarted}
-            className="flex-1 font-mono bg-black/40 border border-alibi-cream/20 text-alibi-cream text-sm rounded-full px-4 py-3 outline-none placeholder:text-alibi-cream/20 focus:border-alibi-gold transition disabled:opacity-40"
-          />
+        <div className="flex-shrink-0 flex gap-3 items-end py-3">
+          <div className="flex flex-1 flex-col text-left">
+            <label
+              htmlFor="chat-message"
+              className="font-mono text-alibi-cream/60 text-[9px] uppercase tracking-widest mb-1 px-4"
+            >
+              Chat message
+            </label>
+            <input
+              id="chat-message"
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendMessage()}
+              placeholder={timerStarted ? "Say something..." : "Waiting for discussion to start..."}
+              disabled={!timerStarted}
+              className="font-mono bg-black/40 border border-alibi-cream/20 text-alibi-cream text-sm rounded-full px-4 py-3 outline-none placeholder:text-alibi-cream/20 focus:border-alibi-gold transition disabled:opacity-40"
+            />
+          </div>
           <button
             onClick={sendMessage}
             disabled={!input.trim() || !timerStarted}

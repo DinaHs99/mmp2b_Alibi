@@ -22,18 +22,21 @@ export default function Home() {
       <img
         src={paper}
         alt=""
+        aria-hidden="true"
         className="absolute opacity-90 hidden md:block"
         style={{ right: '-60px', bottom: '0px', width: '380px' }}
       />
       <img
         src={locationCard}
         alt=""
+        aria-hidden="true"
         className="absolute opacity-90 hidden md:block"
         style={{ bottom: '-50px', left: '-40px', width: '240px' }}
       />
       <img
         src={coins}
         alt=""
+        aria-hidden="true"
         className="absolute opacity-90 hidden md:block"
         style={{ top: '80px', left: '-10px', width: '130px' }}
       />

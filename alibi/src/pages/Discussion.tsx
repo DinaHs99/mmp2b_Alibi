@@ -370,10 +370,12 @@ export default function Discussion() {
             className="w-full flex justify-between items-center border border-alibi-cream/10 bg-black/30 rounded-2xl px-4 py-3 transition hover:border-alibi-cream/30"
           >
             <span className="font-mono text-alibi-cream/50 text-[9px] uppercase tracking-widest">
-              🔒 My Private Clue
+              <span aria-hidden="true">🔒 </span>
+              My Private Clue
             </span>
             <span className="font-mono text-alibi-cream/30 text-xs">
-              {showClue ? '▲ hide' : '▼ show'}
+              <span aria-hidden="true">{showClue ? '▲ ' : '▼ '}</span>
+              {showClue ? 'hide' : 'show'}
             </span>
           </button>
           {showClue && (
@@ -403,8 +405,14 @@ export default function Discussion() {
                 }`}
               >
                 <PlayerAvatar className="h-12 w-12" />
-                <span className="text-sm -mt-4 ml-9 rounded-full bg-black/70 px-1">
+                <span
+                  className="text-sm -mt-4 ml-9 rounded-full bg-black/70 px-1"
+                  aria-hidden="true"
+                >
                   {player.is_ready ? '✅' : '❌'}
+                </span>
+                <span className="sr-only">
+                  {player.is_ready ? 'Ready' : 'Not ready'}
                 </span>
                 <p className="font-heading text-alibi-cream text-[8px] uppercase tracking-wide whitespace-nowrap">
                   {player.fake_name}

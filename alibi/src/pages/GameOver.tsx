@@ -108,6 +108,7 @@ export default function GameOver() {
             <img
               src={winner === 'citizens' ? citizensImg : conspiratorsImg}
               alt=""
+              aria-hidden="true"
               className="w-full object-cover max-h-48"
             />
             <div className={`p-5 text-center ${

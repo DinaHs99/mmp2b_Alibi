@@ -368,6 +368,7 @@ export default function VotingReveal() {
               <img
                 src={isConspirator ? conspiratorsImg : citizensImg}
                 alt=""
+                aria-hidden="true"
                 className="w-full object-cover"
               />
 

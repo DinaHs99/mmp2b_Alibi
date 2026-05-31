@@ -78,7 +78,7 @@ export default function CreateScenario() {
                   : 'border-alibi-cream/20 bg-black/30 hover:border-alibi-gold/50'
               }`}
             >
-              <div className="text-4xl mb-3">{scenario.icon}</div>
+              <div className="text-4xl mb-3" aria-hidden="true">{scenario.icon}</div>
               <h3 className="font-heading text-alibi-gold text-sm uppercase tracking-wide mb-2">
                 {scenario.title}
               </h3>

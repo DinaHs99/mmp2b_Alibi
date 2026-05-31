@@ -144,6 +144,7 @@ export default function RoleReveal() {
                 <div className="w-full mb-6 overflow-hidden rounded-xl border border-alibi-gold/20 bg-black/40">
                   <video
                     src={scenarioVideo}
+                    aria-label="Case briefing video"
                     className="aspect-video w-full object-cover"
                     autoPlay
                     muted

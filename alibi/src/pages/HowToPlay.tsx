@@ -45,6 +45,7 @@ const HowToPlay = () => {
         <img
           src={paper}
           alt=""
+          aria-hidden="true"
           className="absolute inset-0 w-full h-full object-fill"
         />
 

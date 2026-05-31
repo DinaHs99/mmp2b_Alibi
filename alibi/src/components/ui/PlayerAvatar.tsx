@@ -8,6 +8,7 @@ interface PlayerAvatarProps {
 export default function PlayerAvatar({ className = '', muted = false }: PlayerAvatarProps) {
   return (
     <div
+      aria-hidden="true"
       className={`relative shrink-0 overflow-hidden rounded-full border bg-black/30 ${
         muted ? 'border-alibi-cream/10 opacity-35' : 'border-alibi-gold/30'
       } ${className}`}
@@ -15,6 +16,7 @@ export default function PlayerAvatar({ className = '', muted = false }: PlayerAv
       <img
         src={avatar}
         alt=""
+        aria-hidden="true"
         className="h-full w-full object-cover object-top"
         draggable={false}
       />

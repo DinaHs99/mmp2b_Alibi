@@ -436,6 +436,11 @@ export default function Discussion() {
         {/* Messages - only this scrolls */}
         <div
           className="flex-1 overflow-y-auto space-y-3 py-2 pr-1"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions text"
+          aria-atomic="false"
+          aria-label="Public discussion messages"
           style={{ scrollbarWidth: 'none' }}
         >
           <div className="text-center py-2">

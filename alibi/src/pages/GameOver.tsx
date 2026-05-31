@@ -185,7 +185,7 @@ export default function GameOver() {
                   </div>
                   <span className={`font-mono text-[9px] uppercase tracking-widest px-2 py-1 rounded-full ${
                     player.status === 'eliminated'
-                      ? 'bg-black/30 text-alibi-cream/30'
+                      ? 'bg-black/30 text-alibi-cream/50'
                       : 'bg-alibi-gold/20 text-alibi-gold'
                   }`}>
                     {player.status === 'eliminated' ? 'Eliminated' : 'Survived'}

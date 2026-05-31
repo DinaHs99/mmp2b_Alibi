@@ -288,7 +288,7 @@ export default function Voting() {
                                     {player.occupation}
                                 </p>
                                 {isMe && (
-                                    <span className="font-mono text-[8px] text-alibi-cream/30 uppercase">
+                                    <span className="font-mono text-[8px] text-alibi-cream/50 uppercase">
                                         You
                                     </span>
                                 )}

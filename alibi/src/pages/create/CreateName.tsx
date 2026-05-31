@@ -57,7 +57,7 @@ export default function CreateName() {
           placeholder="Your name..."
           maxLength={20}
           aria-describedby={error ? 'create-player-name-error' : undefined}
-          className="font-body bg-transparent border-b-2 border-alibi-gold text-alibi-cream text-center text-xl outline-none w-72 pb-2 mb-2 placeholder:text-alibi-cream/30"
+          className="font-body bg-transparent border-b-2 border-alibi-gold text-alibi-cream text-center text-xl outline-none w-72 pb-2 mb-2 placeholder:text-alibi-cream/50"
         />
 
         {/* Error */}

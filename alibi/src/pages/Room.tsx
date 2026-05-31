@@ -235,7 +235,7 @@ export default function Room() {
               className="flex min-h-36 flex-col items-center justify-between gap-2 p-3 rounded-2xl border border-alibi-cream/10 bg-black/20 sm:p-4"
             >
               <PlayerAvatar className="h-20 w-20" muted />
-              <p className="font-heading text-alibi-cream/20 text-xs uppercase tracking-wide">
+              <p className="font-heading text-alibi-cream/50 text-xs uppercase tracking-wide">
                 Waiting...
               </p>
             </div>

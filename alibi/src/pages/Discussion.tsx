@@ -373,7 +373,7 @@ export default function Discussion() {
               <span aria-hidden="true">🔒 </span>
               My Private Clue
             </span>
-            <span className="font-mono text-alibi-cream/30 text-xs">
+            <span className="font-mono text-alibi-cream/50 text-xs">
               <span aria-hidden="true">{showClue ? '▲ ' : '▼ '}</span>
               {showClue ? 'hide' : 'show'}
             </span>
@@ -452,7 +452,7 @@ export default function Discussion() {
           style={{ scrollbarWidth: 'none' }}
         >
           <div className="text-center py-2">
-            <span className="font-mono text-alibi-cream/20 text-[9px] uppercase tracking-widest">
+            <span className="font-mono text-alibi-cream/50 text-[9px] uppercase tracking-widest">
               Discussion has begun. Use your clue wisely.
             </span>
           </div>
@@ -496,7 +496,7 @@ export default function Discussion() {
               onKeyDown={e => e.key === 'Enter' && sendMessage()}
               placeholder={timerStarted ? "Say something..." : "Waiting for discussion to start..."}
               disabled={!timerStarted}
-              className="font-mono bg-black/40 border border-alibi-cream/20 text-alibi-cream text-sm rounded-full px-4 py-3 outline-none placeholder:text-alibi-cream/20 focus:border-alibi-gold transition disabled:opacity-40"
+              className="font-mono bg-black/40 border border-alibi-cream/20 text-alibi-cream text-sm rounded-full px-4 py-3 outline-none placeholder:text-alibi-cream/50 focus:border-alibi-gold transition disabled:opacity-40"
             />
           </div>
           <button

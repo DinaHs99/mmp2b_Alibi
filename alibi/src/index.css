@@ -3,6 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background-color: theme('colors.alibi-black');
+  }
+
+  body {
+    margin: 0;
+  }
+
   :where(a, button, input, textarea, select, [tabindex]):focus-visible {
     outline: 3px solid theme('colors.alibi-gold');
     outline-offset: 4px;

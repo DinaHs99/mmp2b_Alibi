@@ -305,7 +305,7 @@ export default function RoleReveal() {
               I AM READY
             </button>
 
-            <p className="font-body text-alibi-cream/30 text-xs italic">
+            <p className="font-body text-alibi-cream/50 text-xs italic">
               Remember your role. Tell no one.
             </p>
             

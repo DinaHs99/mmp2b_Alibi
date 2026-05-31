@@ -62,7 +62,7 @@ export default function JoinCode() {
           placeholder="ABC123"
           maxLength={6}
           aria-describedby={visibleError ? 'room-code-error' : undefined}
-          className="font-mono bg-transparent border-b-2 border-alibi-gold text-alibi-gold text-center text-3xl outline-none w-72 pb-2 mb-2 placeholder:text-alibi-cream/30 tracking-widest"
+          className="font-mono bg-transparent border-b-2 border-alibi-gold text-alibi-gold text-center text-3xl outline-none w-72 pb-2 mb-2 placeholder:text-alibi-cream/50 tracking-widest"
         />
 
         {/* Errors */}

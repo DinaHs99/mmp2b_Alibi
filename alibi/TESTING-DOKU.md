@@ -41,7 +41,7 @@ test('conspirators win when they equal the number of citizens', () => {
 })
 ```
 
-→ Commit: [COMMIT-HASH HIER EINFÜGEN]
+→ Commit: [67fa1ce]
 
 ### UI Tests (Interaktion)
 
@@ -52,7 +52,7 @@ test('conspirators win when they equal the number of citizens', () => {
 - Eingabe wird automatisch groß geschrieben (`abc123` → `ABC123`)
 - gültiger Code → `joinRoom('ABC123')` wird aufgerufen
 
-→ Commit: [COMMIT-HASH HIER EINFÜGEN]
+→ Commit: [67fa1ce]
 
 ## 3. Was haben wir NICHT getestet (und warum)?
 
@@ -99,7 +99,7 @@ export default defineConfig({
 
 **Test-Befehl:** `npm run test:coverage`
 
-→ Commit: [COMMIT-HASH HIER EINFÜGEN]
+→ Commit: [67fa1ce]
 
 ## 5. Welche Schwierigkeiten hatten wir?
 
@@ -129,7 +129,7 @@ Konkret hinzugefügt:
 Es war **kein Refactoring der Spiellogik nötig** – das werten wir als positives
 Zeichen für die bestehende Architektur.
 
-→ Commit: [COMMIT-HASH HIER EINFÜGEN]
+→ Commit: [67fa1ce]
 
 ## 7. Coverage / Anzahl Tests
 

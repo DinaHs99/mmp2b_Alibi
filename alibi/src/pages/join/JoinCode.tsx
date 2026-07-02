@@ -12,7 +12,6 @@ export default function JoinCode() {
   const visibleError = localError || error
 
   const handleJoin = async () => {
-    console.log('handleJoin called with:', input)
 
     if (!input.trim()) {
       setLocalError('Please enter a room code')
@@ -24,7 +23,6 @@ export default function JoinCode() {
     }
 
     setLocalError('')
-    console.log('Calling joinRoom...')
     await joinRoom(input.trim())
   }
 

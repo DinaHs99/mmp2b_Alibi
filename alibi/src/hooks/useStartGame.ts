@@ -18,7 +18,7 @@ export const useStartGame = () => {
         .eq('room_id', roomId)
 
       if (playersError || !players) throw playersError
-      console.log('Players:', players.length)
+      
 
       
       const { data: scenario, error: scenarioError } = await supabase
@@ -28,12 +28,12 @@ export const useStartGame = () => {
         .single()
 
       if (scenarioError || !scenario) throw scenarioError
-      console.log('Scenario:', scenario.title)
+      
 
       
       const conspiratorCount = getConspiratorCount(players.length)
       const assignments      = assignRoles(players, scenario, conspiratorCount)
-      console.log('Assignments:', assignments)
+      
 
       
       for (const assignment of assignments) {
@@ -57,7 +57,6 @@ export const useStartGame = () => {
 
       if (roomError) throw roomError
 
-      console.log('Game started!')
 
     } catch (err) {
       console.error('Start game failed:', err)

@@ -97,7 +97,7 @@ export default function Room() {
           filter: `id=eq.${foundRoom.id}`
         }, (payload) => {
           const updatedRoom = payload.new
-          console.log('Phase changed:', updatedRoom.phase)
+          
 
           if (updatedRoom.phase === 'role_reveal') {
             navigate(`/room/${code}/role-reveal`)

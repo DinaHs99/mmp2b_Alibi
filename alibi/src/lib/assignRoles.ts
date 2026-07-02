@@ -18,7 +18,9 @@ interface PlayerAssignment {
     private_clue: string
 }
 
-
+// Fisher-Yates shuffle: returns a new randomly ordered copy of the array
+// without mutating the original. Used to randomise both which players get
+// which role and which occupation/clue each player receives.
 const shuffleArray = <T,>(array: T[]): T[] => {
     const shuffled = [...array]
 

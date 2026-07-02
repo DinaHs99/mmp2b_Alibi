@@ -4,6 +4,8 @@ interface Player {
     status: string;
 }
 
+// determines whether the game is over and which team won
+// returns 'citizens' or 'conspirators' or null if the game is not over
 export const checkWinCondition = (players: Player[]): 'citizens' | 'conspirators' | null => {
     const alivePlayers = players.filter(player => player.status === 'alive')
     const aliveconspirators= alivePlayers.filter(player => player.role === 'conspirator')

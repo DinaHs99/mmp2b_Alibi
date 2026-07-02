@@ -76,13 +76,13 @@ test('conspirators win when they equal the number of citizens', () => {
 - **@vitest/coverage-v8** für den Coverage-Report
 
 **Installation:**
-\```bash
+```bash
 npm install -D vitest @testing-library/react @testing-library/jest-dom \
   @testing-library/user-event jsdom @vitest/coverage-v8
-\```
+```
 
 **`vitest.config.ts`:**
-\```ts
+```ts
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
@@ -95,7 +95,7 @@ export default defineConfig({
     coverage: { provider: 'v8' },
   },
 })
-\```
+```
 
 **Test-Befehl:** `npm run test:coverage`
 

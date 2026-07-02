@@ -12,8 +12,7 @@ export const userCreateRoom = () => {
 
     const createRoom = async (scenarioIdParam?: string) => {
         const finalScenarioId = scenarioIdParam || scenarioId
-        //debug
-        console.log("createRoom", playerName, playerCount, finalScenarioId)
+        
         if(!playerName || !playerCount || !finalScenarioId){
             setError("Missing player name, player count, or scenario ID");
             return;
@@ -24,7 +23,7 @@ export const userCreateRoom = () => {
 
         try {
             const code = generateRoomCode()
-            console.log('Generated code:', code)
+            
 
             // Create room
             const { data: room, error: roomError } = await supabase
@@ -44,7 +43,7 @@ export const userCreateRoom = () => {
                 throw roomError
             }
 
-            console.log('Room created:', room)
+            
 
             
             const sessionId = crypto.randomUUID()
@@ -65,7 +64,7 @@ export const userCreateRoom = () => {
                 throw playerError
             }
 
-            console.log('Player created successfully')
+    
 
             setRoomCode(code)
             setIsHost(true)

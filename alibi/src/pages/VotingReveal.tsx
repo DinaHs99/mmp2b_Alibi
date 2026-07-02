@@ -100,7 +100,7 @@ export default function VotingReveal() {
         table: 'rooms',
         filter: `id=eq.${foundRoom.id}`
       }, (payload) => {
-        console.log('VotingReveal room update:', payload.new)
+       
 
        
         if (payload.new.revealed === true) {

@@ -8,7 +8,7 @@
 
 ## Overview
 
-ALIBI is a fully playable web application built for the implementation course — not a static prototype. It supports room creation, join-by-code, realtime multiplayer state, automatic role assignment, scenario briefings, discussion, voting, night actions, win-condition handling, audio feedback, a responsive UI, and accessibility improvements.
+ALIBI is a fully playable web application built for the implementation course. It supports room creation, join-by-code, realtime multiplayer state, automatic role assignment, scenario briefings, discussion, voting, night actions, win-condition handling, audio feedback, a responsive UI, and accessibility improvements.
 
 ## Tech Stack
 

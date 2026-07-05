@@ -41,7 +41,6 @@ export default function NightPhase() {
   const [investigationResult, setInvestigationResult] = useState<string | null>(null)
   const [showDawnTransition, setShowDawnTransition] = useState(false)
 
-  const isHost = sessionStorage.getItem('alibi_is_host') === 'true'
   const sessionId = sessionStorage.getItem('alibi_session_id')
   const alivePlayers = players.filter(player => player.status === 'alive')
   const aliveConspirators = alivePlayers.filter(player => player.role === 'conspirator')
@@ -108,17 +107,19 @@ export default function NightPhase() {
 
       const alivePlayers = players?.filter(player => player.status === 'alive') || []
       const currentPlayer = players?.find(player => player.session_id === sessionId) || null
-      const nextHostAlive = alivePlayers.some(player => player.is_host)
+      const aliveHost = alivePlayers.find(player => player.is_host)
       const firstAlivePlayer = alivePlayers[0]
 
       setPlayers(players || [])
       setMyPlayer(currentPlayer)
       setIsEliminated(currentPlayer?.status === 'eliminated')
-      setCanAutoAdvance(
+      //Lebt der Host → er ist Controller
+      //Host tot → erster lebender Spieler ist Controller
+      const controllerSessionId = aliveHost?.session_id ?? firstAlivePlayer?.session_id
+      const iAmController =
         currentPlayer?.status === 'alive' &&
-        !nextHostAlive &&
-        firstAlivePlayer?.session_id === currentPlayer.session_id
-      )
+        controllerSessionId === currentPlayer?.session_id
+      setCanAutoAdvance(Boolean(iAmController))
 
       const { data: actions } = await supabase
         .from('night_actions')
@@ -188,7 +189,7 @@ export default function NightPhase() {
 
   useEffect(() => {
     if (!room || !allRequiredActionsComplete || processing) return
-    if (!isHost && !canAutoAdvance) return
+    if (!canAutoAdvance) return
 
     const timeout = setTimeout(() => {
       startNextDay()
@@ -200,10 +201,33 @@ export default function NightPhase() {
       clearTimeout(timeout)
       setShowDawnTransition(false)
     }
-  }, [room, canAutoAdvance, processing, nightActions, killedPlayer])
+  }, [room, canAutoAdvance, processing, nightActions, killedPlayer, allRequiredActionsComplete])
 
+  // Fallback: realtime UPDATE events can occasionally be missed, which would
+  // leave non-controller players stuck on this screen until they reload.
+  useEffect(() => {
+    if (!room) return
+
+    const interval = setInterval(async () => {
+      const { data: latestRoom } = await supabase
+        .from('rooms')
+        .select('phase')
+        .eq('id', room.id)
+        .single()
+
+      if (!latestRoom) return
+
+      if (latestRoom.phase === 'discussion') {
+        navigate(`/room/${code}/discussion`)
+      } else if (latestRoom.phase === 'gameover') {
+        navigate(`/room/${code}/gameover`)
+      }
+    }, 2500)
+
+    return () => clearInterval(interval)
+  }, [room, code, navigate])
   const startNextDay = async () => {
-    if (!room || !allRequiredActionsComplete || (!isHost && !canAutoAdvance)) return
+    if (!room || !allRequiredActionsComplete || !canAutoAdvance) return
     setProcessing(true)
 
     const { data: latestPlayers, error: playersError } = await supabase

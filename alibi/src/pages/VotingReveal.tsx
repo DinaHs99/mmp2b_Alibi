@@ -191,10 +191,12 @@ export default function VotingReveal() {
             .update({ phase: 'gameover' })
             .eq('id', room.id)
         } else {
+
+            const nextPhase = room.player_count >= 6 ? 'night' : 'discussion'
             await supabase
             .from('rooms')
             .update({
-                phase: 'night',
+                phase: nextPhase,
                 round: room.round + 1,
                 revealed: false,
                 tie_player_ids: null, 
